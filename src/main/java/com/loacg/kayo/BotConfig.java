@@ -7,9 +7,9 @@ package com.loacg.kayo;
  */
 public class BotConfig {
     // Telegram robot KEY
-    public static final String TOKEN_KAYO = "218567205:AAGE46KUdBjdz3C-tAZyh7QDoP4XF45Jfis";
+    public static final String TOKEN_KAYO = "-";
     // Robot name
-    public static final String USERNAME_KAYO = "kayosan_bot";
+    public static final String USERNAME_KAYO = "-";
     // Robot Restful API address
     public static final String BOTAPI_KAYO = "https://robot.loacg.com/";
 
