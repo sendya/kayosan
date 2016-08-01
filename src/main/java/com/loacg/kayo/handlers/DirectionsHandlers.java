@@ -1,6 +1,7 @@
 package com.loacg.kayo.handlers;
 
 import com.loacg.kayo.BotConfig;
+import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
@@ -26,7 +27,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     }
 
     public DirectionsHandlers() {
-        super(options);
+        // super(options);
     }
 
     @Override
@@ -46,6 +47,8 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
             if (message.getText().startsWith("/start") || message.getText().startsWith("/help")) {
                 this.sendHelp(message);
+            } else if (message.getText().startsWith("/bind")) {
+                handlerBindCommand(message);
             }
         }
     }
@@ -74,6 +77,48 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
         sendMessageRequest.setText(sb.toString());
         sendMessageRequest.setChatId(message.getChatId().toString());
+
+        try {
+            sendMessage(sendMessageRequest);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
+    private void handlerBindCommand(Message message) {
+        SendMessage request = new SendMessage();
+        request.enableHtml(true);
+
+        StringBuffer sb = new StringBuffer();
+
+        String[] strs = message.getText().split(" ");
+        if (strs.length >= 2) {
+            if ("typecho_comment".equals(strs[1])) {
+                sb.append("无权使用");
+            } else if ("wordpress_comment".equals(strs[1])) {
+                sb.append("无权使用");
+            } else if ("netease_music".equals(strs[1])) {
+                if(strs.length != 3) {
+                    sb.append("格式错误。 /bind netease_music [你的cookie]");
+                } else {
+                    sb.append("无权使用");
+                }
+            } else if("qq_msg".equals(strs[1])) {
+                if(strs.length != 3) {
+                    sb.append("格式错误。 /bind qq_msg [QQ号]");
+                } else {
+                    sb.append("内测中, 您无权使用");
+                }
+            }
+        }
+        request.setText(sb.toString());
+        request.setChatId(message.getChatId().toString());
+        request.setReplyToMessageId(message.getMessageId().intValue());
+
+        try {
+            sendMessage(request);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
 }

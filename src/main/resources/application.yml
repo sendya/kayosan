@@ -8,9 +8,13 @@ spring:
     password: root
 debug: false
 logging:
-  level:
-    root: WARN
+  level: warn
+    *: warn
+    root: warn
     org:
-      springframework:
-        web: WARN
-      hibernate: ERROR
+      telegram:
+        telegrambots: warn
+          loggin: warn
+
+  path: D:\sdk\tmp\logs
+  file: kayo.log
