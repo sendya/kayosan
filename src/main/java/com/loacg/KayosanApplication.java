@@ -13,8 +13,10 @@ public class KayosanApplication {
 
 		try {
 			Kayo.run();
+
 		} catch (TelegramApiException e) {
 			System.exit(0);
 		}
+
 	}
 }

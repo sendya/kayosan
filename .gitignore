@@ -6,4 +6,4 @@
 build/
 
 # BotConfig
-src/main/java/com/loacg/kayo/BotConfig.java
+#/src/main/java/com/loacg/kayo/BotConfig.java

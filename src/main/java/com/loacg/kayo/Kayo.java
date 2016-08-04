@@ -13,6 +13,7 @@ import org.telegram.telegrambots.updatesreceivers.BotSession;
 public class Kayo {
 
     public static BotSession botSession;
+    public static DirectionsHandlers directionsHandlers;
 
     public static void main(String[] args) throws TelegramApiException  {
         Kayo.run();
@@ -22,7 +23,8 @@ public class Kayo {
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
 
         System.out.println("Start kayo bot");
-        botSession = telegramBotsApi.registerBot(new DirectionsHandlers());
+        directionsHandlers = new DirectionsHandlers();
+        botSession = telegramBotsApi.registerBot(directionsHandlers);
         System.out.println("Kayo Bot is running..");
 
     }

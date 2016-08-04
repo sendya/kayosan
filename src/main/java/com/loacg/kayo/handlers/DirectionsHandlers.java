@@ -3,6 +3,7 @@ package com.loacg.kayo.handlers;
 import com.loacg.kayo.BotConfig;
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.BotOptions;
@@ -47,6 +48,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         Message message = update.getMessage();
+        System.out.println(String.format("%s\tDEBUG", DF.format(new Date())));
         if (message != null && message.hasText()) {
             System.out.println(String.format("%s\tINFO --- [UID:%s]\t%s", DF.format(new Date()), message.getChatId(), message.getText()));
             if (message.getText().startsWith("/start") || message.getText().startsWith("/help")) {
@@ -55,6 +57,47 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 handlerBindCommand(message);
             }
         }
+    }
+
+    public Message hookSendMessage(String chatId, String content) {
+        Message message = null;
+        SendMessage request = new SendMessage();
+        request.enableMarkdown(true);
+        request.setText(content);
+        request.setChatId(chatId);
+        try {
+            message = sendMessage(request);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+        return message;
+    }
+
+
+    public void sendMsg() throws TelegramApiException {
+        Message message = null;
+        SendMessage request = new SendMessage();
+        request.enableMarkdown(true);
+        StringBuffer sb = new StringBuffer()
+                .append("Testing..");
+        request.setText(sb.toString());
+        request.setChatId("-16593353");
+
+        message = sendMessage(request);
+
+        EditMessageText editMessageText = new EditMessageText();
+        editMessageText.setChatId(message.getChatId().toString());
+        editMessageText.setMessageId(message.getMessageId());
+
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        editMessageText.setText("OK!!");
+
+        editMessageText(editMessageText);
+
     }
 
     private void sendHelp(Message message) {
@@ -66,16 +109,6 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 .append("/help - Show Commands\n")
                 .append("/ping - Kayo is online?\n")
                 .append("/whoami - Show your Telegram ID\n\n")
-                .append("<code>[Netease Cloud Music API]</code>:\n\n")
-                .append("/music_info [id] - Show music info\n")
-                .append("/music_lrc [id] - Get music lyric\n")
-                .append("/music_download [id] - Get mp3 file 320Kbps\n\n")
-                .append("/bind [type] - 绑定命令\n")
-                .append("   type\n\n")
-                .append("   * typecho_comment - 绑定typecho博客即时提示/回复留言功能\n")
-                .append("   * wordpress_comment - 绑定wordpress博客即时提示/回复留言功能\n")
-                .append("   * netease_music 网易云音乐签到\n(格式: /bind [netease_music] COOKIE)\n")
-                .append("   * qq_msg - 将消息推送给指定QQ号\n(格式：/bind [qq_msg] QQ号\n\n")
                 .append("Contact me via @Sendya\n\n")
                 .append("Thanks for using Kayo Bot!");
 
@@ -125,4 +158,6 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             e.printStackTrace();
         }
     }
+
+
 }
