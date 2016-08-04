@@ -15,7 +15,7 @@ public class KayosanApplication {
 			Kayo.run();
 
 		} catch (TelegramApiException e) {
-			System.exit(0);
+			e.printStackTrace();
 		}
 
 	}

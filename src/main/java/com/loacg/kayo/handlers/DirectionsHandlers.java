@@ -73,6 +73,20 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         return message;
     }
 
+    public Message hookEditMessage(String chatId, Integer messageId, String text) {
+        Message message = null;
+        EditMessageText editMessageText = new EditMessageText();
+        editMessageText.setChatId(chatId);
+        editMessageText.setMessageId(messageId);
+        editMessageText.setText(text);
+        try {
+            message = editMessageText(editMessageText);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+        return message;
+    }
+
 
     public void sendMsg() throws TelegramApiException {
         Message message = null;

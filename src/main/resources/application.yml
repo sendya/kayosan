@@ -32,8 +32,8 @@ spring:
 logging:
   level:
     root: info
-    org.springframework: warn
-    org.hibernate: warn
-    org.apache.catalina: warn
-    com.loacg: warn
-    org.telegram: warn
+    org.springframework: info
+    org.hibernate: info
+    org.apache.catalina: info
+    com.loacg: info
+    org.telegram: info

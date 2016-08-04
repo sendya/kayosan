@@ -3,9 +3,10 @@ package com.loacg.service;
 import com.loacg.kayo.Kayo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.telegram.telegrambots.TelegramApiException;
+import org.telegram.telegrambots.api.objects.Message;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -47,7 +48,14 @@ public class Test {
     @RequestMapping("/now")
     public String nowTime() {
         String time = DF.format(new Date());
-        Kayo.directionsHandlers.hookSendMessage("-16593353", "**Kayo 报时** 现在时刻：" + time);
-        return time;
+        Message message = Kayo.directionsHandlers.hookSendMessage("-16593353", "**Kayo 报时** 现在时刻：" + time);
+        return message.getChatId() + "\t|\t" + message.getMessageId();
+    }
+
+    @RequestMapping("/message/{cid}-{messageId}")
+    public String upNowTime(@PathVariable("{cid}") String cid, @PathVariable("{messageId}") String messageId) {
+        String time = DF.format(new Date());
+        Kayo.directionsHandlers.hookEditMessage(cid, Integer.valueOf(messageId), "**Kayo 报时** 现在时刻：" + time);
+        return "success";
     }
 }
