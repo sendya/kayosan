@@ -52,8 +52,8 @@ public class Test {
         return message.getChatId() + "\t|\t" + message.getMessageId();
     }
 
-    @RequestMapping("/message/{cid}-{messageId}")
-    public String upNowTime(@PathVariable("{cid}") String cid, @PathVariable("{messageId}") String messageId) {
+    @RequestMapping("/message")
+    public String upNowTime(String cid, String messageId) {
         String time = DF.format(new Date());
         Kayo.directionsHandlers.hookEditMessage(cid, Integer.valueOf(messageId), "**Kayo 报时** 现在时刻：" + time);
         return "success";

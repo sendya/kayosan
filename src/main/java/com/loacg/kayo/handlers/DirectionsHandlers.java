@@ -76,6 +76,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     public Message hookEditMessage(String chatId, Integer messageId, String text) {
         Message message = null;
         EditMessageText editMessageText = new EditMessageText();
+        editMessageText.enableMarkdown(true);
         editMessageText.setChatId(chatId);
         editMessageText.setMessageId(messageId);
         editMessageText.setText(text);
