@@ -3,6 +3,7 @@ package com.loacg.kayo;
 import com.loacg.kayo.handlers.DirectionsHandlers;
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.TelegramBotsApi;
+import org.telegram.telegrambots.updatesreceivers.BotSession;
 
 /**
  * Project: kayo
@@ -10,6 +11,8 @@ import org.telegram.telegrambots.TelegramBotsApi;
  * Time: 8/1/2016 5:14 PM
  */
 public class Kayo {
+
+    public static BotSession botSession;
 
     public static void main(String[] args) throws TelegramApiException  {
         Kayo.run();
@@ -19,7 +22,7 @@ public class Kayo {
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
 
         System.out.println("Start kayo bot");
-        telegramBotsApi.registerBot(new DirectionsHandlers());
+        botSession = telegramBotsApi.registerBot(new DirectionsHandlers());
         System.out.println("Kayo Bot is running..");
 
     }

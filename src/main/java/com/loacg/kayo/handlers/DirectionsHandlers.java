@@ -8,6 +8,9 @@ import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.BotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Project: kayo
  * Author: Sendya <18x@loacg.com>
@@ -17,6 +20,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     // STATUS
     private static final int WATING_ORIGIN_STATUS = 0;
     private static final int WATING_DESTINY_STATUS = 1;
+    private static SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     // proxy
     private static final BotOptions options;
 
@@ -44,7 +48,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         Message message = update.getMessage();
         if (message != null && message.hasText()) {
-
+            System.out.println(String.format("%s\tINFO --- [UID:%s]\t%s", DF.format(new Date()), message.getChatId(), message.getText()));
             if (message.getText().startsWith("/start") || message.getText().startsWith("/help")) {
                 this.sendHelp(message);
             } else if (message.getText().startsWith("/bind")) {

@@ -4,3 +4,6 @@
 
 # Build dir
 build/
+
+# BotConfig
+src/main/java/com/loacg/kayo/BotConfig.java
