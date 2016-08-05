@@ -1,6 +1,9 @@
 package com.loacg.kayo.handlers;
 
 import com.loacg.kayo.BotConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
@@ -11,12 +14,14 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Project: kayo
  * Author: Sendya <18x@loacg.com>
  * Time: 8/1/2016 5:15 PM
  */
+@Component
 public class DirectionsHandlers extends TelegramLongPollingBot {
     // STATUS
     private static final int WATING_ORIGIN_STATUS = 0;
@@ -24,6 +29,11 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     private static SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     // proxy
     private static final BotOptions options;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    private Integer lastId = 0;
 
     static {
         options = new BotOptions();
@@ -55,6 +65,10 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 this.sendHelp(message);
             } else if (message.getText().startsWith("/bind")) {
                 handlerBindCommand(message);
+            } else if(message.getText().startsWith("/control")) {
+                controlBind(message);
+            } else if(message.getText().startsWith("/skilled_driver")) {
+                skilledDriver(message);
             }
         }
     }
@@ -113,6 +127,75 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
         editMessageText(editMessageText);
 
+    }
+
+    private void controlBind(Message message) {
+        Message reMsg = null;
+        SendMessage response = new SendMessage();
+        response.enableMarkdown(true);
+
+        EditMessageText editText = new EditMessageText();
+        editText.enableMarkdown(true);
+
+        try {
+            String command = message.getText().split(" ")[1];
+
+            if(message.getFrom().getId() == 37569432) {
+                response.setText("已接收到命令 `" + command + "` 正在进行处理");
+                response.setChatId("-16593353");
+                reMsg = sendMessage(response);
+                Thread.sleep(2000);
+                if(reMsg != null) {
+                    editText.setChatId(reMsg.getChatId().toString());
+                    editText.setMessageId(reMsg.getMessageId());
+                    editText.setText("执行完毕。 正在重启服务");
+                    reMsg = editMessageText(editText);
+
+                    Thread.sleep(2000);
+
+                    editText.setMessageId(reMsg.getMessageId());
+                    editText.setText("重启完毕。");
+                    editMessageText(editText);
+                }
+            } else {
+                response.setText("已接收到命令 `" + command + "` 正在进行处理");
+                response.setChatId(message.getChatId().toString());
+                reMsg = sendMessage(response);
+                Thread.sleep(500);
+                if(reMsg != null) {
+                    editText.setChatId(reMsg.getChatId().toString());
+                    editText.setMessageId(reMsg.getMessageId());
+                    editText.setText("您无权执行该命令。");
+                    reMsg = editMessageText(editText);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void skilledDriver(Message message) {
+        Message reMsg = null;
+        SendMessage response = new SendMessage();
+        response.enableMarkdown(true);
+
+        try {
+            Integer count = jdbcTemplate.queryForObject("SELECT count(1) FROM `t_video`", Integer.class);
+            lastId++;
+            if (lastId >= count) {
+                response.setText("目前已经没有资源了。");
+            } else {
+                Map<String, Object> data = jdbcTemplate.queryForMap("SELECT * FROM `t_video` WHERE id=?", new Object[] {lastId});
+                response.setChatId(message.getChatId().toString());
+                response.setReplyToMessageId(message.getMessageId());
+                response.setText("名称： `" + data.get("title") + "`\n\n" + "番号： `" + data.get("bangumi_id") + "`\n\n" + "磁力： `" + data.get("magnet") + "`");
+                sendMessage(response);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void sendHelp(Message message) {

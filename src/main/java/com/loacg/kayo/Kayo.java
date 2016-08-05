@@ -1,6 +1,7 @@
 package com.loacg.kayo;
 
 import com.loacg.kayo.handlers.DirectionsHandlers;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.updatesreceivers.BotSession;
@@ -13,6 +14,8 @@ import org.telegram.telegrambots.updatesreceivers.BotSession;
 public class Kayo {
 
     public static BotSession botSession;
+
+    @Autowired
     public static DirectionsHandlers directionsHandlers;
 
     public static void main(String[] args) throws TelegramApiException  {
@@ -23,7 +26,7 @@ public class Kayo {
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
 
         System.out.println("Start kayo bot");
-        directionsHandlers = new DirectionsHandlers();
+        // directionsHandlers = new DirectionsHandlers();
         botSession = telegramBotsApi.registerBot(directionsHandlers);
         System.out.println("Kayo Bot is running..");
 
