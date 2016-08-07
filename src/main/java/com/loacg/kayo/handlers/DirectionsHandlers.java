@@ -106,7 +106,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 } else if (text.startsWith("/bind")) {
                     handleBindCommand(message);
                 } else if (text.startsWith("/unbind")) {
-                    System.out.println("Command \"unbind\" not found");
+                    handleBindCommand(message);
                 } else if (text.startsWith("/uptime")) {
                     handleSendUptime(message);
                 } else if (text.startsWith("/test")) {
@@ -272,14 +272,28 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         String command[] = text.split(" ");
         if (command.length == 2) {
 
-            if ("hitokoto".equals(command[1])) {
-                hitokotoChatIds.add(message.getChatId().toString());
-            } else if ("chime".equals(command[1])) {
-                chimeChatIds.add(message.getChatId().toString());
+            if(command[0].startsWith("/bind")) {
+                if ("hitokoto".equals(command[1])) {
+                    hitokotoChatIds.add(message.getChatId().toString());
+                } else if ("chime".equals(command[1])) {
+                    chimeChatIds.add(message.getChatId().toString());
+                }
+                hookSendMessage(message.getChatId().toString(), String.format("已成功绑定 `%s` 消息通知", command[1]), message.getMessageId());
+            } else if (command[0].startsWith("/unbind")) {
+                if ("hitokoto".equals(command[1])) {
+                    hitokotoChatIds.remove(message.getChatId().toString());
+                } else if ("chime".equals(command[1])) {
+                    chimeChatIds.remove(message.getChatId().toString());
+                }
+                hookSendMessage(message.getChatId().toString(), String.format("已取消绑定 `%s` 消息通知", command[1]), message.getMessageId());
             }
-            hookSendMessage(message.getChatId().toString(), String.format("已成功绑定 `%s` 消息通知", command[1]), message.getMessageId());
+
         } else {
-            hookSendMessage(message.getChatId().toString(), "Unknown command!!\nExample:\n\n/bind hitokoto - 在本群绑定一言\n/bind chime - 整点报时", message.getMessageId());
+            if(command[0].startsWith("/bind")) {
+                hookSendMessage(message.getChatId().toString(), "Unknown command!!\nExample:\n\n/bind hitokoto - 在本群绑定一言\n/bind chime - 整点报时", message.getMessageId());
+            } else {
+                hookSendMessage(message.getChatId().toString(), "Unknown command!!\nExample:\n\n/unbind hitokoto - 取消绑定本群一言\n/bind chime - 取消整点报时", message.getMessageId());
+            }
         }
     }
 
