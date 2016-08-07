@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
 
 import java.text.SimpleDateFormat;
@@ -42,22 +43,29 @@ public class Test {
                 .append("|")
                 .append(list.get(0).get("email").toString());
 
-        bot.hookSendMessage("-16593353", sb.toString());
-
         return "ok";
     }
 
     @RequestMapping("/now")
     public String nowTime() {
         String time = DF.format(new Date());
-        Message message = bot.hookSendMessage("-16593353", "**Kayo 报时** 现在时刻：" + time);
+        Message message = null;
+        try {
+            message = bot.hookSendMessage("-16593353", "**Kayo 报时** 现在时刻：" + time);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
         return message.getChatId() + "\t|\t" + message.getMessageId();
     }
 
-    @RequestMapping("/message")
+    @RequestMapping("/upnow")
     public String upNowTime(String cid, String messageId) {
         String time = DF.format(new Date());
-        bot.hookEditMessage(cid, Integer.valueOf(messageId), "**Kayo 报时** 现在时刻：" + time);
+        try {
+            bot.hookEditMessage(cid, Integer.valueOf(messageId), "**Kayo 报时** 现在时刻：" + time);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
         return "success";
     }
 }

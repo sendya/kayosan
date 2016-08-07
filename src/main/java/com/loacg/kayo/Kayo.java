@@ -17,18 +17,4 @@ public class Kayo {
 
     @Autowired
     public static DirectionsHandlers directionsHandlers;
-
-    public static void main(String[] args) throws TelegramApiException  {
-        Kayo.run();
-    }
-
-    public static void run() throws TelegramApiException {
-        TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
-
-        System.out.println("Start kayo bot");
-        // directionsHandlers = new DirectionsHandlers();
-        botSession = telegramBotsApi.registerBot(directionsHandlers);
-        System.out.println("Kayo Bot is running..");
-
-    }
 }

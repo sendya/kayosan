@@ -1,0 +1,50 @@
+Manifest-Version: 1.0
+Class-Path: jersey-bundle-1.19.1.jar tomcat-embed-el-8.5.4.jar jersey-
+ server-2.23.1.jar hk2-utils-2.4.0-b34.jar assertj-core-2.5.0.jar juni
+ t-4.12.jar spring-data-commons-1.12.2.RELEASE.jar tomcat-embed-websoc
+ ket-8.5.4.jar spring-expression-4.3.2.RELEASE.jar spring-core-4.3.2.R
+ ELEASE.jar jackson-jaxrs-json-provider-2.8.1.jar spring-boot-starter-
+ mail-1.4.0.RELEASE.jar druid-1.0.23.jar xml-apis-1.4.01.jar jcl-over-
+ slf4j-1.7.21.jar hk2-locator-2.4.0-b34.jar tomcat-embed-core-8.5.4.ja
+ r commons-codec-1.10.jar commons-lang3-3.4.jar spring-boot-starter-lo
+ gging-1.4.0.RELEASE.jar grizzly-http-server-2.3.23.jar accessors-smar
+ t-1.1.jar spring-boot-starter-1.4.0.RELEASE.jar jackson-module-jaxb-a
+ nnotations-2.8.1.jar json-path-2.2.0.jar tomcat-juli-8.5.4.jar jersey
+ -container-grizzly2-http-2.23.jar log4j-over-slf4j-1.7.21.jar spring-
+ boot-autoconfigure-1.4.0.RELEASE.jar httpclient-4.5.2.jar mysql-conne
+ ctor-java-5.1.39.jar hamcrest-library-1.3.jar spring-aspects-4.3.2.RE
+ LEASE.jar hamcrest-core-1.3.jar grizzly-http-servlet-2.2.16.jar hiber
+ nate-jpa-2.1-api-1.0.0.Final.jar tomcat-jdbc-8.5.4.jar jackson-annota
+ tions-2.8.1.jar jersey-core-1.19.1.jar slf4j-api-1.7.21.jar jersey-me
+ dia-jaxb-2.23.1.jar dom4j-1.6.1.jar hibernate-entitymanager-5.0.9.Fin
+ al.jar snakeyaml-1.17.jar grizzly-framework-2.3.23.jar javax.servlet-
+ api-3.1.0.jar spring-test-4.3.2.RELEASE.jar javax.annotation-api-1.2.
+ jar javassist-3.20.0-GA.jar jersey-common-2.23.1.jar jersey-grizzly2-
+ 1.19.1.jar logback-core-1.1.7.jar hibernate-core-5.0.9.Final.jar json
+ -smart-2.2.1.jar hibernate-validator-5.2.4.Final.jar antlr-2.7.7.jar 
+ hibernate-commons-annotations-5.0.1.Final.jar jsr311-api-1.1.1.jar ob
+ jenesis-2.1.jar spring-boot-starter-data-jpa-1.4.0.RELEASE.jar spring
+ -boot-starter-test-1.4.0.RELEASE.jar spring-tx-4.3.2.RELEASE.jar spri
+ ng-orm-4.3.2.RELEASE.jar spring-data-jpa-1.10.2.RELEASE.jar javax.tra
+ nsaction-api-1.2.jar spring-boot-1.4.0.RELEASE.jar spring-boot-starte
+ r-jdbc-1.4.0.RELEASE.jar jackson-core-2.8.1.jar aopalliance-repackage
+ d-2.4.0-b34.jar jsonassert-1.3.0.jar spring-context-4.3.2.RELEASE.jar
+  spring-webmvc-4.3.2.RELEASE.jar jersey-servlet-1.19.1.jar jandex-2.0
+ .0.Final.jar spring-beans-4.3.2.RELEASE.jar httpcore-4.4.5.jar jboss-
+ logging-3.3.0.Final.jar grizzly-http-2.3.23.jar jackson-jaxrs-base-2.
+ 8.1.jar asm-5.0.3.jar aspectjweaver-1.8.9.jar jersey-client-2.23.1.ja
+ r spring-web-4.3.2.RELEASE.jar osgi-resource-locator-1.0.1.jar jersey
+ -grizzly2-servlet-1.19.1.jar jul-to-slf4j-1.7.21.jar spring-aop-4.3.2
+ .RELEASE.jar javax.inject-2.4.0-b34.jar json-20140107.jar javax.mail-
+ 1.5.5.jar logback-classic-1.1.7.jar spring-boot-starter-aop-1.4.0.REL
+ EASE.jar TelegramBots-v2.3.3.6.jar mockito-core-1.10.19.jar validatio
+ n-api-1.1.0.Final.jar spring-boot-starter-tomcat-1.4.0.RELEASE.jar je
+ rsey-media-json-jackson-2.23.1.jar spring-boot-test-1.4.0.RELEASE.jar
+  spring-boot-test-autoconfigure-1.4.0.RELEASE.jar jersey-guava-2.23.1
+ .jar httpmime-4.5.2.jar hk2-api-2.4.0-b34.jar jersey-server-1.19.1.ja
+ r spring-context-support-4.3.2.RELEASE.jar jackson-databind-2.8.1.jar
+  spring-jdbc-4.3.2.RELEASE.jar activation-1.1.jar spring-boot-starter
+ -web-1.4.0.RELEASE.jar javax.ws.rs-api-2.0.1.jar jersey-entity-filter
+ ing-2.23.1.jar classmate-1.3.1.jar
+Main-Class: com.loacg.KayosanApplication
+

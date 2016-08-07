@@ -6,9 +6,9 @@ spring:
     continue-on-error: true
     type: com.alibaba.druid.pool.DruidDataSource
     driverClassName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/test?&useUnicode=true&characterEncoding=utf8
-    username: root
-    password: root
+    url: jdbc:mysql://db.loacg.com:9522/skilleddriver?&useUnicode=true&characterEncoding=utf8
+    username: skilleddriver
+    password: sHFY8ZRTpJpeaKmr
     # 初始化大小，最小，最大
     initialSize: 5
     minIdle: 5
@@ -31,9 +31,9 @@ spring:
 
 logging:
   level:
-    root: info
+    root: warn
     org.springframework: info
-    org.hibernate: info
-    org.apache.catalina: info
+    org.hibernate: warn
+    org.apache.catalina: warn
     com.loacg: info
-    org.telegram: info
+    org.telegram: warno

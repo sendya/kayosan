@@ -32,7 +32,7 @@ public class KayosanApplication {
 		TelegramBotsApi api = new TelegramBotsApi();
 		try {
 			session = api.registerBot(bot);
-			System.out.println("Kay running");
+			System.out.println("Kayo running");
 		} catch (TelegramApiException e) {
 			logger.error("Failed to register bot {} due to error {}: {}", bot.getBotUsername(), e.getMessage(), e.getApiResponse());
 		}
