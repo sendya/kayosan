@@ -29,11 +29,11 @@ repositories {
 
 
 dependencies {
-	compile('org.springframework.boot:spring-boot-starter-data-jpa')
 	compile('org.springframework.boot:spring-boot-starter-jdbc')
 	compile('org.springframework.boot:spring-boot-starter-mail')
 	compile('org.springframework.boot:spring-boot-starter-web')
 	compile('com.github.rubenlagus:TelegramBots:v2.3.3.6')
+	compile('org.apache.commons:commons-lang3:3.4')
 	compile('com.alibaba:druid:1.0.23')
 	runtime('mysql:mysql-connector-java')
 	testCompile('org.springframework.boot:spring-boot-starter-test')

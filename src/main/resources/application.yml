@@ -1,3 +1,5 @@
+server:
+  port: 9090
 spring:
   jpa:
     database: MYSQL
@@ -32,8 +34,20 @@ spring:
 logging:
   level:
     root: warn
-    org.springframework: info
+    org.springframework: warn
     org.hibernate: warn
     org.apache.catalina: warn
     com.loacg: info
-    org.telegram: warno
+    org.telegram: warn
+
+robot:
+  api:  https://robot.loacg.com/
+  kayo:
+    token: BOT-TOKEN
+    name: BOT-NAME
+  test:
+    token: BOT-TOKEN
+    name: BOT-NAME
+  yans:
+    token: BOT-TOKEN
+    name: BOT-NAME

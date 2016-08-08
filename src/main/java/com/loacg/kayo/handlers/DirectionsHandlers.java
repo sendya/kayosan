@@ -5,14 +5,13 @@ import com.loacg.utils.DateUtil;
 import com.loacg.utils.HttpClient;
 import com.loacg.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.telegram.telegrambots.TelegramApiException;
+import org.telegram.telegrambots.api.methods.send.SendAudio;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
@@ -21,15 +20,12 @@ import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.BotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
-import java.io.File;
+import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Project: kayo
@@ -39,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class DirectionsHandlers extends TelegramLongPollingBot {
 
+    @Autowired
+    private BotConfig botConfig;
     // STATUS
     private static final int WATING_ORIGIN_STATUS = 0;
     private static final int WATING_DESTINY_STATUS = 1;
@@ -68,17 +66,21 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
     public DirectionsHandlers() {
         // super(options);
-        System.out.println("Start bot in " + BotConfig.USERNAME_KAYO);
+    }
+
+    @PostConstruct
+    public void init(){
+        logger.info("Starting {} robot", botConfig.getName());
     }
 
     @Override
     public String getBotToken() {
-        return BotConfig.TOKEN_KAYO;
+        return botConfig.getToken();
     }
 
     @Override
     public String getBotUsername() {
-        return BotConfig.USERNAME_KAYO;
+        return botConfig.getName();
     }
 
     @Override
@@ -218,7 +220,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 .append("/photo - Get random photo\n")
                 .append("/uptime - Robot runtime\n")
                 .append("Contact me via @Sendya\n\n")
-                .append("Thanks for using Yans Bot (@" + BotConfig.USERNAME_KAYO + ")");
+                .append("Thanks for using @" + this.getBotUsername());
 
         hookSendMessage(message.getChatId().toString(), sb.toString(), 0, 2);
     }
@@ -226,7 +228,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     private void handleSendWhoami(Message message) throws TelegramApiException {
         StringBuffer sb = new StringBuffer();
         if (!message.isUserMessage()) {
-            hookSendMessage(message.getChatId().toString(), sb.append("无法在群组或频道查看自己的 Telegram ID\n请私密 @").append(BotConfig.USERNAME_KAYO).toString() , message.getMessageId(), 0);
+            hookSendMessage(message.getChatId().toString(), sb.append("无法在群组或频道查看自己的 Telegram ID\n请私密 @").append(this.getBotUsername()).toString(), message.getMessageId(), 0);
         } else {
             hookSendMessage(message.getChatId().toString(), String.format("您的 Telegram ID 为 `%s`", message.getFrom().getId()), message.getMessageId(), 1);
         }
@@ -238,7 +240,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
     private void handleSendUptime(Message message) throws TelegramApiException {
         hookSendMessage(message.getChatId().toString(),
-                String.format(BotConfig.USERNAME_KAYO + " 已经运行了 %s", DateUtil.timeStampAutoShow(DateUtil.getTimeStamp(true) - bootTime)),
+                String.format(this.getBotUsername() + " 已经运行了 %s", DateUtil.timeStampAutoShow(DateUtil.getTimeStamp(true) - bootTime)),
                 message.getMessageId(), 0);
     }
 
@@ -265,14 +267,14 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
      */
     private void handleBindCommand(Message message) throws TelegramApiException {
         String text = message.getText();
-        String botName = "@" + BotConfig.USERNAME_KAYO;
+        String botName = "@" + this.getBotUsername();
         if (text.indexOf(botName) != -1) {
             text.replace(botName, "");
         }
         String command[] = text.split(" ");
         if (command.length == 2) {
 
-            if(command[0].startsWith("/bind")) {
+            if (command[0].startsWith("/bind")) {
                 if ("hitokoto".equals(command[1])) {
                     hitokotoChatIds.add(message.getChatId().toString());
                 } else if ("chime".equals(command[1])) {
@@ -289,10 +291,10 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             }
 
         } else {
-            if(command[0].startsWith("/bind")) {
+            if (command[0].startsWith("/bind")) {
                 hookSendMessage(message.getChatId().toString(), "Unknown command!!\nExample:\n\n/bind hitokoto - 在本群绑定一言\n/bind chime - 整点报时", message.getMessageId());
             } else {
-                hookSendMessage(message.getChatId().toString(), "Unknown command!!\nExample:\n\n/unbind hitokoto - 取消绑定本群一言\n/bind chime - 取消整点报时", message.getMessageId());
+                hookSendMessage(message.getChatId().toString(), "Unknown command!!\nExample:\n\n/unbind hitokoto - 取消绑定本群一言\n/unbind chime - 取消整点报时", message.getMessageId());
             }
         }
     }
@@ -327,12 +329,41 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         logger.info("Tasks Chime call , time {}", DateUtil.date2String(new Date()));
         try {
             for (String chatId : chimeChatIds) {
-                hookSendMessage(chatId, "*整点报时* 现在时间：" + DateUtil.date2String(new Date(), "yyyy-MM-dd hh:mm"));
+                hookSendMessage(chatId, "*整点报时* 现在时间：" + DateUtil.date2String(new Date(), "yyyy-MM-dd HH:mm"));
             }
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+    }
 
+    /**
+     * 定时消息 早上问好，晚安（GoodMorning & Good bye）
+     */
+    public void delaySendGoodMorningAndBye() {
+        logger.info("Tasks GoodMorning & Good bye call , time {}", DateUtil.date2String(new Date()));
+        String text = null;
+        SendAudio audio = new SendAudio();
+        audio.setAudio("AgADBQADq6cxGyUSBw0ICEtTZSFvsP5eszIABGjCCqbNzDY6FjUAAgI");
+
+        String nowTime = new SimpleDateFormat("HH:MM").format(new Date());
+        int i = DateUtil.dateCompare(nowTime,"06:00","HH:MM");
+
+        try {
+            if (i == 0) {
+                // 是6点
+                // 发送 早安问候
+            } else {
+                // 不是6点就肯定是 23点
+                // 发送晚安问候
+            }
+
+            for (String chatId : chimeChatIds) {
+                hookSendMessage(chatId, text); // 发送文字
+                sendAudio(audio); // 发送语音
+            }
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
 }

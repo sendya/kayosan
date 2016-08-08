@@ -469,4 +469,29 @@ public class DateUtil {
 
         return map;
     }
+
+    /**
+     * 根据时间类型比较时间大小
+     *
+     * @param source
+     * @param target
+     * @param type "YYYY-MM-DD" "yyyyMMdd HH:mm:ss"  类型可自定义
+     * @return
+     *  0 ：source和traget时间相同
+     *  1 ：source比traget时间大
+     *  -1：source比traget时间小
+     * @throws Exception
+     */
+    public static int dateCompare(String source, String target, String type) {
+        int ret = 2;
+        SimpleDateFormat format = new SimpleDateFormat(type);
+        try {
+            Date sourceDate = format.parse(source);
+            Date targetDate = format.parse(target);
+            ret = sourceDate.compareTo(targetDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return ret;
+    }
 }

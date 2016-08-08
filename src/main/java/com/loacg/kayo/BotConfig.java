@@ -1,16 +1,43 @@
 package com.loacg.kayo;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
 /**
  * Project: kayo
  * Author: Sendya <18x@loacg.com>
  * Time: 8/1/2016 5:11 PM
  */
-public class BotConfig {
-    // Telegram robot KEY
-    public static final String TOKEN_KAYO = "-";
-    // Robot name
-    public static final String USERNAME_KAYO = "-";
-    // Robot Restful API address
-    public static final String BOTAPI_KAYO = "https://robot.loacg.com/";
 
+@Component
+@ConfigurationProperties(prefix = "robot.kayo")
+public class BotConfig {
+
+    private String token;
+    private String name;
+    private String api;
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getApi() {
+        return api;
+    }
+
+    public void setApi(String api) {
+        this.api = api;
+    }
 }
