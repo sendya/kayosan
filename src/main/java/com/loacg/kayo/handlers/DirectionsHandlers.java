@@ -11,16 +11,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.TelegramApiException;
-import org.telegram.telegrambots.api.methods.send.SendAudio;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.api.methods.send.SendVoice;
 import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
-import org.telegram.telegrambots.bots.BotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,8 +40,6 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     // STATUS
     private static final int WATING_ORIGIN_STATUS = 0;
     private static final int WATING_DESTINY_STATUS = 1;
-    // proxy
-    private static final BotOptions options;
     private static Logger logger = LoggerFactory.getLogger(DirectionsHandlers.class);
     private static SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -56,16 +54,8 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     private JdbcTemplate jdbcTemplate;
     private Integer lastId = 0;
 
-    static {
-        options = new BotOptions();
-        options.setProxyHost("127.0.0.1");
-        options.setProxyPort(1080);
-
-        bootTime = System.currentTimeMillis();
-    }
-
     public DirectionsHandlers() {
-        // super(options);
+        bootTime = System.currentTimeMillis();
     }
 
     @PostConstruct
@@ -342,28 +332,35 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     public void delaySendGoodMorningAndBye() {
         logger.info("Tasks GoodMorning & Good bye call , time {}", DateUtil.date2String(new Date()));
         String text = null;
-        SendAudio audio = new SendAudio();
-        audio.setAudio("AgADBQADq6cxGyUSBw0ICEtTZSFvsP5eszIABGjCCqbNzDY6FjUAAgI");
 
         String nowTime = new SimpleDateFormat("HH:MM").format(new Date());
         int i = DateUtil.dateCompare(nowTime,"06:00","HH:MM");
 
-        try {
-            if (i == 0) {
-                // 是6点
-                // 发送 早安问候
-            } else {
-                // 不是6点就肯定是 23点
-                // 发送晚安问候
-            }
 
-            for (String chatId : chimeChatIds) {
-                hookSendMessage(chatId, text); // 发送文字
-                sendAudio(audio); // 发送语音
-            }
+    }
+
+    // 测试用代码
+    public void hookSendAudio(String fileName) {
+        SendVoice voice = new SendVoice();
+        voice.setNewVoice(new File("D:\\audio\\"+fileName+".m4a"));
+        try {
+            // BQADBQADAQAD5lQHDgXZvgQWfPj9Ag    起来拉，一起吃早饭了
+            // BQADBQADAgAD5lQHDs_SNMi7shzjAg    今天也要加油
+            // BQADBQADBAAD5lQHDh4MZW5oIrxyAg
+            // BQADBQADBQAD5lQHDrmbvZYxd-ilAg    H！
+
+            voice.setChatId("-1001064858540");
+            Message message = sendVoice(voice);
+            System.out.println(message);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
     }
+
+
+    public void hookSendInlineKeyboard() {
+
+    }
+
 
 }

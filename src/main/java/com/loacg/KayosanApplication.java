@@ -22,17 +22,12 @@ public class KayosanApplication {
 
 	private final Logger logger = LoggerFactory.getLogger(KayosanApplication.class);
 
+	private BotSession session;
 	@Autowired private BotConfig botConfig;
 	@Autowired private DirectionsHandlers bot;
 
-	private BotSession session;
-
 	@RequestMapping("/") public String home() {
 		return "This page is not available";
-	}
-
-	public static void main(String[] args) {
-		SpringApplication.run(KayosanApplication.class, args);
 	}
 
 	@PostConstruct public void start() {
@@ -49,5 +44,9 @@ public class KayosanApplication {
 		if (session != null) {
 			session.close();
 		}
+	}
+
+	public static void main(String[] args) {
+		SpringApplication.run(KayosanApplication.class, args);
 	}
 }

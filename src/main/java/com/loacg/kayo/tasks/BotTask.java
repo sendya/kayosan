@@ -23,7 +23,7 @@ public class BotTask {
     @Scheduled(cron = "0 0 8,23 * * *")
     public void delaySendGoodMorningAndBye() {
         if (bot != null) {
-            bot.delaySendGoodMorningAndBye();
+            // bot.delaySendGoodMorningAndBye();
         }
     }
 

@@ -3,12 +3,10 @@ package com.loacg.controller;
 import com.loacg.kayo.handlers.DirectionsHandlers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * Project: kayosan
@@ -25,18 +23,11 @@ public class Test {
     @Autowired
     private DirectionsHandlers bot;
 
-    @RequestMapping("/query")
-    public @ResponseBody Object queryData() {
-        List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT * FROM `t_video`");
-
-        StringBuffer sb = new StringBuffer()
-                .append(list.get(0).get("id").toString())
-                .append("|")
-                .append(list.get(0).get("short_code").toString())
-                .append("|")
-                .append(list.get(0).get("title").toString());
-
-        return list;
+    @RequestMapping("/query/{name}")
+    public @ResponseBody Object queryData(@PathVariable("name") String name) {
+        // List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT * FROM `t_video`");
+        bot.hookSendAudio(name);
+        return "success";
     }
 
 }
