@@ -205,7 +205,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 .append("/help - Show commands\n")
                 .append("/ping - Robot is online?\n")
                 .append("/whoami - Show your Telegram ID\n\n")
-                .append("/bind [command] - Bind delay Scheduled tasks")
+                .append("/bind [command] - Bind delay Scheduled tasks\n")
                 .append("/unbind [command] - Unbind delay Scheduled tasks\n")
                 .append("/photo - Get random photo\n")
                 .append("/uptime - Robot runtime\n")
@@ -259,7 +259,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         String text = message.getText();
         String botName = "@" + this.getBotUsername();
         if (text.indexOf(botName) != -1) {
-            text.replace(botName, "");
+            text = text.replace(botName, "");
         }
         String command[] = text.split(" ");
         if (command.length == 2) {
