@@ -52,6 +52,8 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     private static List<String> chimeChatIds = new ArrayList<>();
     // Bind --> Hitokoto random message
     private static List<String> hitokotoChatIds = new ArrayList<>();
+
+    private static List<Integer> whiteList = new ArrayList<>();
     // Robot start time
     private static long bootTime;
 
@@ -63,32 +65,23 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     private Admin adminDao;
     private Integer lastId = 0;
 
-    public DirectionsHandlers() {
-
-    }
-
-    public void init() {
-
-    }
-
     @PostConstruct
-    public void start(){
+    public void start() {
         logger.info("Starting {} robot", botConfig.getName());
 
         bootTime = System.currentTimeMillis();
         List<Map<String, Object>> list = bindCommand.getChatIds(1);
-        System.out.println(list);
-        for(Map<String, Object> map : list) {
+        logger.info("Load bind chime {}", list.toString());
+        for (Map<String, Object> map : list) {
             chimeChatIds.add(map.get("chatId").toString());
         }
         list = bindCommand.getChatIds(2);
-        System.out.println(list);
-        for(Map<String, Object> map : list) {
+        logger.info("Load bind hitokoto {}", list.toString());
+        for (Map<String, Object> map : list) {
             hitokotoChatIds.add(map.get("chatId").toString());
         }
-
         adminList = adminDao.getAdminList();
-        System.out.println(adminList);
+        logger.info("Load admin {}", adminList.toString());
     }
 
     @Override
@@ -113,12 +106,12 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         }
 
         logger.info(message.toString());
-        if (message.getNewChatMember()!=null && message.getNewChatMember().getId() != null) {
+        if (message.getNewChatMember() != null && message.getNewChatMember().getId() != null) {
             try {
                 String name = "";
-                if(message.getNewChatMember().getLastName() != null)
+                if (message.getNewChatMember().getLastName() != null)
                     name = message.getNewChatMember().getLastName();
-                if(message.getNewChatMember().getFirstName() != null)
+                if (message.getNewChatMember().getFirstName() != null)
                     name += message.getNewChatMember().getFirstName();
                 hookSendMessage(message.getChatId().toString(), String.format("热烈欢迎 `%s` 加入群组，请先查阅群置顶消息。", name), message.getMessageId());
             } catch (TelegramApiException e) {
@@ -130,9 +123,9 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         if (message.getLeftChatMember() != null && message.getLeftChatMember().getId() != null) {
             try {
                 String name = "";
-                if(message.getLeftChatMember().getLastName() != null)
+                if (message.getLeftChatMember().getLastName() != null)
                     name = message.getLeftChatMember().getLastName();
-                if(message.getLeftChatMember().getFirstName() != null)
+                if (message.getLeftChatMember().getFirstName() != null)
                     name += message.getLeftChatMember().getFirstName();
                 hookSendMessage(message.getChatId().toString(), String.format("群成员 `%s` 离开了群组，-1s。", name), message.getMessageId());
             } catch (TelegramApiException e) {
@@ -158,7 +151,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                     handleBindCommand(message);
                 } else if (text.startsWith("/whitelist")) {
                     handleAddWhiteList(message);
-                }  else if (text.startsWith("/uptime")) {
+                } else if (text.startsWith("/uptime")) {
                     handleSendUptime(message);
                 } else if (text.startsWith("/test")) {
                     handleSendPhoto(message);
@@ -378,7 +371,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         }
         String command[] = text.split(" ");
         if (command.length == 2) {
-            if(whiteListDao.addUser(message.getFrom().getId(), message.getChatId())) {
+            if (whiteListDao.addUser(message.getFrom().getId(), message.getChatId())) {
                 hookSendMessage(message.getChatId().toString(), "添加白名单成功", message.getMessageId());
             } else {
                 hookSendMessage(message.getChatId().toString(), "添加白名单失败！！", message.getMessageId());
@@ -432,18 +425,19 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         String text = null;
         SendVoice voice = new SendVoice();
         String nowTime = new SimpleDateFormat("HH:MM").format(new Date());
-        int i = DateUtil.dateCompare(nowTime,"06:00","HH:MM");
+        int i = DateUtil.dateCompare(nowTime, "06:00", "HH:MM");
         try {
             if (i > 0) {
                 // 不是早上
                 //Resource resource = new ClassPathResource("audio/a00.m4a");
                 //voice.setNewVoice(resource.getFile());
-                voice.setVoice("BQADBQADAgAD5lQHDs_SNMi7shzjAg");
+                voice.setVoice("AwADBQADFQAD5lQHDo0FTfui6P5nAg");
             } else {
-                Resource resource = new ClassPathResource("audio/a01.m4a");
+                //Resource resource = new ClassPathResource("audio/a01.m4a");
                 // voice.setNewVoice(resource.getFile());
                 voice.setVoice("BQADBQADAQAD5lQHDgXZvgQWfPj9Ag");
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -488,7 +482,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     }
 
     private boolean isAdmin(Integer userId) {
-        return adminList.contains(userId);
+        return !adminList.contains(userId);
     }
 
     private boolean isWhiteList(Long userId, Long chatId) {
