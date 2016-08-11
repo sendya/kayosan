@@ -57,19 +57,25 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     // Robot start time
     private static long bootTime;
 
+    private static boolean botStatus = true;
+
     @Autowired
     private BindCommand bindCommand;
     @Autowired
     private WhiteList whiteListDao;
     @Autowired
     private Admin adminDao;
+
     private Integer lastId = 0;
+
+    public DirectionsHandlers() {
+        bootTime = System.currentTimeMillis();
+    }
 
     @PostConstruct
     public void start() {
         logger.info("Starting {} robot", botConfig.getName());
 
-        bootTime = System.currentTimeMillis();
         List<Map<String, Object>> list = bindCommand.getChatIds(1);
         logger.info("Load bind chime {}", list.toString());
         for (Map<String, Object> map : list) {
@@ -102,6 +108,10 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
         if (message.getDate() < time) {
             logger.info("User {} call command timeout", message.getFrom().getId());
+            return;
+        }
+
+        if (!botStatus || isAdmin(message.getFrom().getId())) { // 未开启服务将直接停止
             return;
         }
 
@@ -151,6 +161,8 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                     handleBindCommand(message);
                 } else if (text.startsWith("/whitelist")) {
                     handleAddWhiteList(message);
+                } else if (text.startsWith("/control")) {
+                    handleControlCommand(message);
                 } else if (text.startsWith("/uptime")) {
                     handleSendUptime(message);
                 } else if (text.startsWith("/test")) {
@@ -246,11 +258,6 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         return editMessageText(response);
     }
 
-    private void handleControlCommand(Message message) {
-
-    }
-
-
     private void handleSendHelp(Message message) throws TelegramApiException {
         StringBuffer sb = new StringBuffer()
                 .append("<code>[Command List]</code>:\n\n")
@@ -300,6 +307,41 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         Message message1 = sendPhoto(photo);
 
         System.out.println(message1);
+    }
+
+    private void handleControlCommand(Message message) throws TelegramApiException {
+        if (isAdmin(message.getFrom().getId())) {
+            hookSendMessage(message.getChatId().toString(), "你不是管理员。", message.getMessageId());
+            return;
+        }
+        Message message1 = hookSendMessage(message.getChatId().toString(), "正在执行命令", message.getMessageId());
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        String text = message.getText();
+        String botName = "@" + this.getBotUsername();
+        if (text.indexOf(botName) != -1) {
+            text = text.replace(botName, "");
+        }
+        String command[] = text.split(" ");
+        if (command.length == 2) {
+            if ("start".equals(command[1])) {
+                botStatus = true;
+                hookSendMessage(message.getChatId().toString(), this.getBotUsername() + " 已启动完毕", message1.getMessageId());
+            } else if ("stop".equals(command[1])) {
+                botStatus = false;
+                hookSendMessage(message.getChatId().toString(), this.getBotUsername() + " 已停止，除管理员启用将无法发送任何消息。", message1.getMessageId());
+            } else if ("restart".equals(command[1])) {
+                botStatus = true;
+                this.start();
+                hookSendMessage(message.getChatId().toString(), this.getBotUsername() + " 已重启完毕。", message1.getMessageId());
+            } else if ("reload".equals(command[1])) {
+                this.start();
+                hookSendMessage(message.getChatId().toString(), this.getBotUsername() + " 已重载完毕。", message1.getMessageId());
+            }
+        }
     }
 
     /**
