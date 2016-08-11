@@ -1,6 +1,9 @@
 package com.loacg.kayo.handlers;
 
 import com.loacg.kayo.BotConfig;
+import com.loacg.kayo.dao.Admin;
+import com.loacg.kayo.dao.BindCommand;
+import com.loacg.kayo.dao.WhiteList;
 import com.loacg.utils.DateUtil;
 import com.loacg.utils.HttpClient;
 import com.loacg.utils.JsonUtils;
@@ -8,7 +11,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
@@ -20,7 +24,6 @@ import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,6 +46,8 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     private static Logger logger = LoggerFactory.getLogger(DirectionsHandlers.class);
     private static SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    private static List<Integer> adminList = new ArrayList<>();
+
     // Bind --> Chime on every hour
     private static List<String> chimeChatIds = new ArrayList<>();
     // Bind --> Hitokoto random message
@@ -51,16 +56,39 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     private static long bootTime;
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private BindCommand bindCommand;
+    @Autowired
+    private WhiteList whiteListDao;
+    @Autowired
+    private Admin adminDao;
     private Integer lastId = 0;
 
     public DirectionsHandlers() {
-        bootTime = System.currentTimeMillis();
+
+    }
+
+    public void init() {
+
     }
 
     @PostConstruct
-    public void init(){
+    public void start(){
         logger.info("Starting {} robot", botConfig.getName());
+
+        bootTime = System.currentTimeMillis();
+        List<Map<String, Object>> list = bindCommand.getChatIds(1);
+        System.out.println(list);
+        for(Map<String, Object> map : list) {
+            chimeChatIds.add(map.get("chatId").toString());
+        }
+        list = bindCommand.getChatIds(2);
+        System.out.println(list);
+        for(Map<String, Object> map : list) {
+            hitokotoChatIds.add(map.get("chatId").toString());
+        }
+
+        adminList = adminDao.getAdminList();
+        System.out.println(adminList);
     }
 
     @Override
@@ -84,6 +112,35 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             return;
         }
 
+        logger.info(message.toString());
+        if (message.getNewChatMember()!=null && message.getNewChatMember().getId() != null) {
+            try {
+                String name = "";
+                if(message.getNewChatMember().getLastName() != null)
+                    name = message.getNewChatMember().getLastName();
+                if(message.getNewChatMember().getFirstName() != null)
+                    name += message.getNewChatMember().getFirstName();
+                hookSendMessage(message.getChatId().toString(), String.format("热烈欢迎 `%s` 加入群组，请先查阅群置顶消息。", name), message.getMessageId());
+            } catch (TelegramApiException e) {
+                logger.error(e.getMessage());
+            }
+            return;
+        }
+
+        if (message.getLeftChatMember() != null && message.getLeftChatMember().getId() != null) {
+            try {
+                String name = "";
+                if(message.getLeftChatMember().getLastName() != null)
+                    name = message.getLeftChatMember().getLastName();
+                if(message.getLeftChatMember().getFirstName() != null)
+                    name += message.getLeftChatMember().getFirstName();
+                hookSendMessage(message.getChatId().toString(), String.format("群成员 `%s` 离开了群组，-1s。", name), message.getMessageId());
+            } catch (TelegramApiException e) {
+                logger.error(e.getMessage());
+            }
+            return;
+        }
+
         if (message != null && message.hasText()) {
             String text = message.getText();
             logger.info("User {}[{}] call command \"{}\" from \"{}\" , messageId: {}", message.getFrom().getUserName(), message.getFrom().getId(), text, message.getChatId(), message.getMessageId());
@@ -99,7 +156,9 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                     handleBindCommand(message);
                 } else if (text.startsWith("/unbind")) {
                     handleBindCommand(message);
-                } else if (text.startsWith("/uptime")) {
+                } else if (text.startsWith("/whitelist")) {
+                    handleAddWhiteList(message);
+                }  else if (text.startsWith("/uptime")) {
                     handleSendUptime(message);
                 } else if (text.startsWith("/test")) {
                     handleSendPhoto(message);
@@ -256,6 +315,10 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
      * @param message
      */
     private void handleBindCommand(Message message) throws TelegramApiException {
+        if (isAdmin(message.getFrom().getId())) {
+            hookSendMessage(message.getChatId().toString(), "你不是管理员。", message.getMessageId());
+            return;
+        }
         String text = message.getText();
         String botName = "@" + this.getBotUsername();
         if (text.indexOf(botName) != -1) {
@@ -266,16 +329,30 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
             if (command[0].startsWith("/bind")) {
                 if ("hitokoto".equals(command[1])) {
-                    hitokotoChatIds.add(message.getChatId().toString());
+                    if (hitokotoChatIds.contains(message.getChatId().toString()) == false) {
+                        hitokotoChatIds.add(message.getChatId().toString());
+                        bindCommand.addBindCommand(message.getChatId().toString(), 1, message.getFrom().getId().toString());
+                    } else {
+                        hookSendMessage(message.getChatId().toString(), String.format("已绑定过 `%s` 消息通知，无法重复绑定", command[1], message.getMessageId()));
+                        return;
+                    }
                 } else if ("chime".equals(command[1])) {
-                    chimeChatIds.add(message.getChatId().toString());
+                    if (chimeChatIds.contains(message.getChatId().toString()) == false) {
+                        chimeChatIds.add(message.getChatId().toString());
+                        bindCommand.addBindCommand(message.getChatId().toString(), 2, message.getFrom().getId().toString());
+                    } else {
+                        hookSendMessage(message.getChatId().toString(), String.format("已绑定过 `%s` 消息通知，无法重复绑定", command[1], message.getMessageId()));
+                        return;
+                    }
                 }
                 hookSendMessage(message.getChatId().toString(), String.format("已成功绑定 `%s` 消息通知", command[1]), message.getMessageId());
             } else if (command[0].startsWith("/unbind")) {
                 if ("hitokoto".equals(command[1])) {
                     hitokotoChatIds.remove(message.getChatId().toString());
+                    bindCommand.removeBindCommand(message.getChatId().toString(), 1);
                 } else if ("chime".equals(command[1])) {
                     chimeChatIds.remove(message.getChatId().toString());
+                    bindCommand.removeBindCommand(message.getChatId().toString(), 2);
                 }
                 hookSendMessage(message.getChatId().toString(), String.format("已取消绑定 `%s` 消息通知", command[1]), message.getMessageId());
             }
@@ -287,6 +364,27 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 hookSendMessage(message.getChatId().toString(), "Unknown command!!\nExample:\n\n/unbind hitokoto - 取消绑定本群一言\n/unbind chime - 取消整点报时", message.getMessageId());
             }
         }
+    }
+
+    private void handleAddWhiteList(Message message) throws TelegramApiException {
+        if (isAdmin(message.getFrom().getId())) {
+            hookSendMessage(message.getChatId().toString(), "你不是管理员。", message.getMessageId());
+            return;
+        }
+        String text = message.getText();
+        String botName = "@" + this.getBotUsername();
+        if (text.indexOf(botName) != -1) {
+            text = text.replace(botName, "");
+        }
+        String command[] = text.split(" ");
+        if (command.length == 2) {
+            if(whiteListDao.addUser(message.getFrom().getId(), message.getChatId())) {
+                hookSendMessage(message.getChatId().toString(), "添加白名单成功", message.getMessageId());
+            } else {
+                hookSendMessage(message.getChatId().toString(), "添加白名单失败！！", message.getMessageId());
+            }
+        }
+        return;
     }
 
     /**
@@ -332,27 +430,54 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     public void delaySendGoodMorningAndBye() {
         logger.info("Tasks GoodMorning & Good bye call , time {}", DateUtil.date2String(new Date()));
         String text = null;
-
+        SendVoice voice = new SendVoice();
         String nowTime = new SimpleDateFormat("HH:MM").format(new Date());
         int i = DateUtil.dateCompare(nowTime,"06:00","HH:MM");
+        try {
+            if (i > 0) {
+                // 不是早上
+                //Resource resource = new ClassPathResource("audio/a00.m4a");
+                //voice.setNewVoice(resource.getFile());
+                voice.setVoice("BQADBQADAgAD5lQHDs_SNMi7shzjAg");
+            } else {
+                Resource resource = new ClassPathResource("audio/a01.m4a");
+                // voice.setNewVoice(resource.getFile());
+                voice.setVoice("BQADBQADAQAD5lQHDgXZvgQWfPj9Ag");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-
+        try {
+            for (String chatId : chimeChatIds) {
+                voice.setChatId(chatId);
+                Message message = sendVoice(voice);
+                logger.info(message.toString());
+            }
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
     // 测试用代码
-    public void hookSendAudio(String fileName) {
+    public void hookSendAudio(String fileName, String chatId, Integer replyMessageId) {
         SendVoice voice = new SendVoice();
-        voice.setNewVoice(new File("D:\\audio\\"+fileName+".m4a"));
         try {
             // BQADBQADAQAD5lQHDgXZvgQWfPj9Ag    起来拉，一起吃早饭了
             // BQADBQADAgAD5lQHDs_SNMi7shzjAg    今天也要加油
             // BQADBQADBAAD5lQHDh4MZW5oIrxyAg
             // BQADBQADBQAD5lQHDrmbvZYxd-ilAg    H！
 
-            voice.setChatId("-1001064858540");
+            Resource resource = new ClassPathResource(fileName);
+            voice.setNewVoice(resource.getInputStream());
+            voice.setChatId(chatId);
+            if (replyMessageId != 0) {
+                voice.setReplyToMessageId(replyMessageId);
+            }
+
             Message message = sendVoice(voice);
-            System.out.println(message);
-        } catch (TelegramApiException e) {
+            logger.info(message.toString());
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -362,5 +487,12 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
     }
 
+    private boolean isAdmin(Integer userId) {
+        return adminList.contains(userId);
+    }
+
+    private boolean isWhiteList(Long userId, Long chatId) {
+        return false;
+    }
 
 }

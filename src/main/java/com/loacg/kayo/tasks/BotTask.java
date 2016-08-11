@@ -20,10 +20,10 @@ public class BotTask {
     @Autowired
     private DirectionsHandlers bot;
 
-    @Scheduled(cron = "0 0 8,23 * * *")
+    @Scheduled(cron = "0 8,23 * * * *")
     public void delaySendGoodMorningAndBye() {
         if (bot != null) {
-            // bot.delaySendGoodMorningAndBye();
+            bot.delaySendGoodMorningAndBye();
         }
     }
 

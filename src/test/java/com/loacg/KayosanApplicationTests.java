@@ -11,6 +11,11 @@ public class KayosanApplicationTests {
 
 	@Test
 	public void contextLoads() {
+
+	}
+
+	public static void main(String[] args) {
+
 	}
 
 }

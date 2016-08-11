@@ -26,7 +26,7 @@ public class Test {
     @RequestMapping("/query/{name}")
     public @ResponseBody Object queryData(@PathVariable("name") String name) {
         // List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT * FROM `t_video`");
-        bot.hookSendAudio(name);
+
         return "success";
     }
 
