@@ -3,10 +3,13 @@ package com.loacg.kayo.handlers;
 import com.loacg.kayo.BotConfig;
 import com.loacg.kayo.dao.Admin;
 import com.loacg.kayo.dao.BindCommand;
+import com.loacg.kayo.dao.BotInfoDao;
 import com.loacg.kayo.dao.WhiteList;
+import com.loacg.kayo.entity.BotInfo;
 import com.loacg.utils.DateUtil;
 import com.loacg.utils.HttpClient;
 import com.loacg.utils.JsonUtils;
+import com.loacg.utils.SudoExecutor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +67,8 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     private WhiteList whiteListDao;
     @Autowired
     private Admin adminDao;
+    @Autowired
+    private BotInfoDao botInfoDao;
 
     private Integer lastId = 0;
 
@@ -90,6 +95,22 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         adminList.clear();
         adminList = adminDao.getAdminList();
         logger.info("Load admin {}", adminList.toString());
+    }
+
+    public void init() {
+        if (botInfoDao.get("restart") != null && Integer.valueOf(botInfoDao.get("restart").getV().toString()) == 1) {
+            if (botInfoDao.get("last_message_id") != null && !"".equals(botInfoDao.get("last_message_id").getV())
+                    && botInfoDao.get("last_chat_id") != null && !"".equals(botInfoDao.get("last_chat_id").getV())) {
+                try {
+                    hookEditMessage(botInfoDao.get("last_chat_id").getV().toString(), Integer.valueOf(botInfoDao.get("last_message_id").getV().toString()), this.getBotUsername() + " 重启完毕。");
+                    botInfoDao.save(new BotInfo("restart", "0").build());
+                    botInfoDao.remove("last_message_id");
+                    botInfoDao.remove("last_chat_id");
+                } catch (Exception e) {
+                    logger.error(e.getMessage());
+                }
+            }
+        }
     }
 
     @Override
@@ -352,9 +373,15 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 return;
             }
             if ("restart".equals(command[1])) {
-                botStatus = true;
-                this.start();
-                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已重启完毕。", 0);
+                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 正在重启中。", 0);
+                botInfoDao.save(new BotInfo("restart", "0").build());
+                botInfoDao.save(new BotInfo("last_message_id", message1.getMessageId().toString()).build());
+                botInfoDao.save(new BotInfo("last_chat_id", message1.getChatId().toString()).build());
+                String[] result = SudoExecutor.buildCommands("bash /root/robot/update.sh", "Yans88888");
+                logger.info(result.toString());
+                if (result.length > 1) {
+                    SudoExecutor.buildCommands("sudo systemctl restart robot", "Yans88888");
+                }
                 return;
             }
             if ("reload".equals(command[1])) {

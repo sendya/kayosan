@@ -61,21 +61,16 @@ public class SudoExecutor {
         return cmds;
     }
 
-    /**
-     * @param args
-     * @throws InterruptedException
-     * @throws IOException
-     */
-    public static void main(String[] args) throws IOException, InterruptedException {
-        SudoExecutor se = new SudoExecutor();
-        se.testExecuteCommand();
-    }
-
     private void testExecuteCommand() throws IOException, InterruptedException {
         String cmd = "cat /etc/sudoers";
         //      SudoExecutor.run(cmd);  // should modify /etc/sudoers
         //      SudoExecutor.run(buildCommands(cmd));  // should modify /etc/sudoers
         SudoExecutor.run(buildCommands(cmd, "123456"));    // don't need modify /etc/sudoers
+    }
+
+    public void test() throws IOException, InterruptedException {
+        SudoExecutor se = new SudoExecutor();
+        se.testExecuteCommand();
     }
 
 }

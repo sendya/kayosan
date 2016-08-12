@@ -35,6 +35,7 @@ public class KayosanApplication {
 		try {
 			session = api.registerBot(bot);
 			logger.info("{} is running", bot.getBotUsername());
+			bot.init();
 		} catch (TelegramApiException e) {
 			logger.error("Failed to register bot {} due to error {}: {}", bot.getBotUsername(), e.getMessage(), e.getApiResponse());
 		}
