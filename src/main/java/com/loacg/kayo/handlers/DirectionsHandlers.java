@@ -26,6 +26,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -377,10 +378,12 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 botInfoDao.save(new BotInfo("restart", "0").build());
                 botInfoDao.save(new BotInfo("last_message_id", message1.getMessageId().toString()).build());
                 botInfoDao.save(new BotInfo("last_chat_id", message1.getChatId().toString()).build());
-                String[] result = SudoExecutor.buildCommands("bash /root/robot/update.sh", "Yans88888");
-                logger.info(result.toString());
-                if (result.length > 1) {
-                    SudoExecutor.buildCommands("sudo systemctl restart robot", "Yans88888");
+                try {
+                    logger.info("Run SudoExecutor..");
+                    SudoExecutor.run(SudoExecutor.buildCommands("/bin/bash /root/robot/update.sh"));
+                    SudoExecutor.run(SudoExecutor.buildCommands("systemctl restart robot"));
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
                 return;
             }
