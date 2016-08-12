@@ -77,14 +77,17 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
         List<Map<String, Object>> list = bindCommand.getChatIds(1);
         logger.info("Load bind chime {}", list.toString());
+        chimeChatIds.clear();
         for (Map<String, Object> map : list) {
             chimeChatIds.add(map.get("chatId").toString());
         }
         list = bindCommand.getChatIds(2);
         logger.info("Load bind hitokoto {}", list.toString());
+        hitokotoChatIds.clear();
         for (Map<String, Object> map : list) {
             hitokotoChatIds.add(map.get("chatId").toString());
         }
+        adminList.clear();
         adminList = adminDao.getAdminList();
         logger.info("Load admin {}", adminList.toString());
     }
@@ -325,12 +328,6 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             this.hookSendMessage(message.getChatId().toString(), "你不是管理员。", message.getMessageId());
             return;
         }
-        Message message1 = this.hookSendMessage(message.getChatId().toString(), "正在执行命令", message.getMessageId());
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         String text = message.getText();
         String botName = "@" + this.getBotUsername();
         if (text.indexOf(botName) != -1) {
@@ -338,6 +335,12 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         }
         String command[] = text.split(" ");
         if (command.length == 2) {
+            Message message1 = this.hookSendMessage(message.getChatId().toString(), "正在执行命令", message.getMessageId());
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             if ("start".equals(command[1]) && !botStatus) {
                 botStatus = true;
                 this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已启动完毕", 0);
