@@ -11,8 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
@@ -24,6 +22,7 @@ import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -111,7 +110,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             return;
         }
 
-        if (!botStatus || isAdmin(message.getFrom().getId())) { // 未开启服务将直接停止
+        if (!botStatus || !isAdmin(message.getFrom().getId())) { // 未开启服务将直接停止
             return;
         }
 
@@ -218,9 +217,6 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         if (replyMessageId != 0) {
             response.setReplyToMessageId(replyMessageId);
         }
-
-        logger.info("Message: {}", response.getText());
-
         message = sendMessage(response);
         return message;
     }
@@ -329,17 +325,17 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         if (command.length == 2) {
             if ("start".equals(command[1])) {
                 botStatus = true;
-                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已启动完毕");
+                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已启动完毕", 0);
             } else if ("stop".equals(command[1])) {
                 botStatus = false;
-                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已停止，除管理员启用将无法发送任何消息。");
+                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已停止，除管理员启用将无法发送任何消息。", 0);
             } else if ("restart".equals(command[1])) {
                 botStatus = true;
                 this.start();
-                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已重启完毕。");
+                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已重启完毕。", 0);
             } else if ("reload".equals(command[1])) {
                 this.start();
-                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已重载完毕。");
+                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已重载完毕。", 0);
             }
         }
     }
@@ -473,11 +469,11 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 // 不是早上
                 //Resource resource = new ClassPathResource("audio/a00.m4a");
                 //voice.setNewVoice(resource.getFile());
-                voice.setVoice("AwADBQADFQAD5lQHDo0FTfui6P5nAg");
+                voice.setVoice("AwADBQADFwAD5lQHDrIYzhtM9BdyAg");
             } else {
                 //Resource resource = new ClassPathResource("audio/a01.m4a");
                 // voice.setNewVoice(resource.getFile());
-                voice.setVoice("BQADBQADAQAD5lQHDgXZvgQWfPj9Ag");
+                voice.setVoice("AwADBQADFgAD5lQHDl-UuIYqVEdYAg");
             }
 
         } catch (Exception e) {
@@ -495,17 +491,30 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         }
     }
 
+
+    // 测试用代码
+    public void hookSendAudio(File file, String chatId, Integer replyMessageId) {
+        SendVoice voice = new SendVoice();
+        try {
+            voice.setNewVoice(file);
+            voice.setChatId(chatId);
+            if (replyMessageId != 0) {
+                voice.setReplyToMessageId(replyMessageId);
+            }
+
+            Message message = sendVoice(voice);
+            logger.info(message.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     // 测试用代码
     public void hookSendAudio(String fileName, String chatId, Integer replyMessageId) {
         SendVoice voice = new SendVoice();
         try {
-            // BQADBQADAQAD5lQHDgXZvgQWfPj9Ag    起来拉，一起吃早饭了
-            // BQADBQADAgAD5lQHDs_SNMi7shzjAg    今天也要加油
-            // BQADBQADBAAD5lQHDh4MZW5oIrxyAg
-            // BQADBQADBQAD5lQHDrmbvZYxd-ilAg    H！
-
-            Resource resource = new ClassPathResource(fileName);
-            voice.setNewVoice(resource.getInputStream());
+            // Resource resource = new ClassPathResource(fileName);
+            // voice.setNewVoice(resource.getInputStream());
+            voice.setVoice(fileName);
             voice.setChatId(chatId);
             if (replyMessageId != 0) {
                 voice.setReplyToMessageId(replyMessageId);
@@ -531,4 +540,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         return false;
     }
 
+    public static boolean getBotStatus() {
+        return botStatus;
+    }
 }

@@ -6,3 +6,6 @@
 # Build dir
 build/
 classes/
+
+# spring config
+/src/main/resources/application.yml
