@@ -43,8 +43,8 @@ logging:
 robot:
   api:  https://robot.loacg.com/
   kayo:
-    token: BOT-TOKEN
-    name: BOT-NAME
+    token: 235361510:AAG7Y3q1KyLSshqPPVi-YNcGSe3g6Z5vJG8
+    name: YansBot
   test:
     token: BOT-TOKEN
     name: BOT-NAME
