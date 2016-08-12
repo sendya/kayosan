@@ -14,8 +14,4 @@ public class KayosanApplicationTests {
 
 	}
 
-	public static void main(String[] args) {
-
-	}
-
 }

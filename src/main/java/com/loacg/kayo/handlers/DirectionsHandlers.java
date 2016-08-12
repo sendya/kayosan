@@ -110,7 +110,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             return;
         }
 
-        if (!botStatus || !isAdmin(message.getFrom().getId())) { // 未开启服务将直接停止
+        if (!!!botStatus && !isAdmin(message.getFrom().getId())) { // 未开启服务将直接停止
             return;
         }
 
@@ -122,7 +122,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                     name = message.getNewChatMember().getLastName();
                 if (message.getNewChatMember().getFirstName() != null)
                     name += message.getNewChatMember().getFirstName();
-                hookSendMessage(message.getChatId().toString(), String.format("热烈欢迎 `%s` 加入群组，请先查阅群置顶消息。", name), message.getMessageId());
+                this.hookSendMessage(message.getChatId().toString(), String.format("热烈欢迎 `%s` 加入群组，请先查阅群置顶消息。", name), message.getMessageId());
             } catch (TelegramApiException e) {
                 logger.error(e.getMessage());
             }
@@ -136,7 +136,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                     name = message.getLeftChatMember().getLastName();
                 if (message.getLeftChatMember().getFirstName() != null)
                     name += message.getLeftChatMember().getFirstName();
-                hookSendMessage(message.getChatId().toString(), String.format("群成员 `%s` 离开了群组，-1s。", name), message.getMessageId());
+                this.hookSendMessage(message.getChatId().toString(), String.format("群成员 `%s` 离开了群组，-1s。", name), message.getMessageId());
             } catch (TelegramApiException e) {
                 logger.error(e.getMessage());
             }
@@ -150,22 +150,39 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             try {
                 if (text.startsWith("/start") || text.startsWith("/help")) {
                     this.handleSendHelp(message);
-                } else if (text.startsWith("/ping")) {
-                    handleSendPong(message);
-                } else if (text.startsWith("/whoami")) {
-                    handleSendWhoami(message);
-                } else if (text.startsWith("/bind")) {
-                    handleBindCommand(message);
-                } else if (text.startsWith("/unbind")) {
-                    handleBindCommand(message);
-                } else if (text.startsWith("/whitelist")) {
-                    handleAddWhiteList(message);
-                } else if (text.startsWith("/control")) {
-                    handleControlCommand(message);
-                } else if (text.startsWith("/uptime")) {
-                    handleSendUptime(message);
-                } else if (text.startsWith("/test")) {
-                    handleSendPhoto(message);
+                    return;
+                }
+                if (text.startsWith("/ping")) {
+                    this.handleSendPong(message);
+                    return;
+                }
+                if (text.startsWith("/whoami")) {
+                    this.handleSendWhoami(message);
+                    return;
+                }
+                if (text.startsWith("/bind")) {
+                    this.handleBindCommand(message);
+                    return;
+                }
+                if (text.startsWith("/unbind")) {
+                    this.handleBindCommand(message);
+                    return;
+                }
+                if (text.startsWith("/whitelist")) {
+                    this.handleAddWhiteList(message);
+                    return;
+                }
+                if (text.startsWith("/control")) {
+                    this.handleControlCommand(message);
+                    return;
+                }
+                if (text.startsWith("/uptime")) {
+                    this.handleSendUptime(message);
+                    return;
+                }
+                if (text.startsWith("/test")) {
+                    this.handleSendPhoto(message);
+                    return;
                 }
             } catch (TelegramApiException e) {
                 e.printStackTrace();
@@ -183,11 +200,11 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
      * @throws TelegramApiException
      */
     public Message hookSendMessage(String chatId, String content) throws TelegramApiException {
-        return hookSendMessage(chatId, content, 0);
+        return this.hookSendMessage(chatId, content, 0);
     }
 
     public Message hookSendMessage(String chatId, String content, Integer replyMessageId) throws TelegramApiException {
-        return hookSendMessage(chatId, content, replyMessageId, 1);
+        return this.hookSendMessage(chatId, content, replyMessageId, 1);
     }
 
     /**
@@ -267,24 +284,24 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 .append("Contact me via @Sendya\n\n")
                 .append("Thanks for using @" + this.getBotUsername());
 
-        hookSendMessage(message.getChatId().toString(), sb.toString(), 0, 2);
+        this.hookSendMessage(message.getChatId().toString(), sb.toString(), 0, 2);
     }
 
     private void handleSendWhoami(Message message) throws TelegramApiException {
         StringBuffer sb = new StringBuffer();
         if (!message.isUserMessage()) {
-            hookSendMessage(message.getChatId().toString(), sb.append("无法在群组或频道查看自己的 Telegram ID\n请私密 @").append(this.getBotUsername()).toString(), message.getMessageId(), 0);
-        } else {
-            hookSendMessage(message.getChatId().toString(), String.format("您的 Telegram ID 为 `%s`", message.getFrom().getId()), message.getMessageId(), 1);
+            this.hookSendMessage(message.getChatId().toString(), sb.append("无法在群组或频道查看自己的 Telegram ID\n请私密 @").append(this.getBotUsername()).toString(), message.getMessageId(), 0);
+            return;
         }
+        this.hookSendMessage(message.getChatId().toString(), String.format("您的 Telegram ID 为 `%s`", message.getFrom().getId()), message.getMessageId(), 1);
     }
 
     private void handleSendPong(Message message) throws TelegramApiException {
-        hookSendMessage(message.getChatId().toString(), "Pong", message.getMessageId());
+        this.hookSendMessage(message.getChatId().toString(), "Pong", message.getMessageId());
     }
 
     private void handleSendUptime(Message message) throws TelegramApiException {
-        hookSendMessage(message.getChatId().toString(),
+        this.hookSendMessage(message.getChatId().toString(),
                 String.format(this.getBotUsername() + " 已经运行了 %s", DateUtil.timeStampAutoShow(DateUtil.getTimeStamp(true) - bootTime)),
                 message.getMessageId(), 0);
     }
@@ -301,16 +318,14 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         // photo.setNewPhoto(new File("D:\\Anime_pic\\001\\3.jpg"));
         photo.setCaption("你这个 Hentai ，/test 不是你想玩就能玩！\nSend photo tested..");
         Message message1 = sendPhoto(photo);
-
-        System.out.println(message1);
     }
 
     private void handleControlCommand(Message message) throws TelegramApiException {
-        if (isAdmin(message.getFrom().getId())) {
-            hookSendMessage(message.getChatId().toString(), "你不是管理员。", message.getMessageId());
+        if (!isAdmin(message.getFrom().getId())) {
+            this.hookSendMessage(message.getChatId().toString(), "你不是管理员。", message.getMessageId());
             return;
         }
-        Message message1 = hookSendMessage(message.getChatId().toString(), "正在执行命令", message.getMessageId());
+        Message message1 = this.hookSendMessage(message.getChatId().toString(), "正在执行命令", message.getMessageId());
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
@@ -323,19 +338,26 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         }
         String command[] = text.split(" ");
         if (command.length == 2) {
-            if ("start".equals(command[1])) {
+            if ("start".equals(command[1]) && !botStatus) {
                 botStatus = true;
-                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已启动完毕", 0);
-            } else if ("stop".equals(command[1])) {
+                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已启动完毕", 0);
+                return;
+            }
+            if ("stop".equals(command[1]) && botStatus) {
                 botStatus = false;
-                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已停止，除管理员启用将无法发送任何消息。", 0);
-            } else if ("restart".equals(command[1])) {
+                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已停止，除管理员启用将无法发送任何消息。", 0);
+                return;
+            }
+            if ("restart".equals(command[1])) {
                 botStatus = true;
                 this.start();
-                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已重启完毕。", 0);
-            } else if ("reload".equals(command[1])) {
+                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已重启完毕。", 0);
+                return;
+            }
+            if ("reload".equals(command[1])) {
                 this.start();
-                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已重载完毕。", 0);
+                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已重载完毕。", 0);
+                return;
             }
         }
     }
@@ -346,8 +368,8 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
      * @param message
      */
     private void handleBindCommand(Message message) throws TelegramApiException {
-        if (isAdmin(message.getFrom().getId())) {
-            hookSendMessage(message.getChatId().toString(), "你不是管理员。", message.getMessageId());
+        if (!isAdmin(message.getFrom().getId())) {
+            this.hookSendMessage(message.getChatId().toString(), "你不是管理员。", message.getMessageId());
             return;
         }
         String text = message.getText();
@@ -356,50 +378,53 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             text = text.replace(botName, "");
         }
         String command[] = text.split(" ");
-        if (command.length == 2) {
 
+        if (command.length < 2) {
             if (command[0].startsWith("/bind")) {
-                if ("hitokoto".equals(command[1])) {
-                    if (hitokotoChatIds.contains(message.getChatId().toString()) == false) {
-                        hitokotoChatIds.add(message.getChatId().toString());
-                        bindCommand.addBindCommand(message.getChatId().toString(), 1, message.getFrom().getId().toString());
-                    } else {
-                        hookSendMessage(message.getChatId().toString(), String.format("已绑定过 `%s` 消息通知，无法重复绑定", command[1], message.getMessageId()));
-                        return;
-                    }
-                } else if ("chime".equals(command[1])) {
-                    if (chimeChatIds.contains(message.getChatId().toString()) == false) {
-                        chimeChatIds.add(message.getChatId().toString());
-                        bindCommand.addBindCommand(message.getChatId().toString(), 2, message.getFrom().getId().toString());
-                    } else {
-                        hookSendMessage(message.getChatId().toString(), String.format("已绑定过 `%s` 消息通知，无法重复绑定", command[1], message.getMessageId()));
-                        return;
-                    }
-                }
-                hookSendMessage(message.getChatId().toString(), String.format("已成功绑定 `%s` 消息通知", command[1]), message.getMessageId());
-            } else if (command[0].startsWith("/unbind")) {
-                if ("hitokoto".equals(command[1])) {
-                    hitokotoChatIds.remove(message.getChatId().toString());
-                    bindCommand.removeBindCommand(message.getChatId().toString(), 1);
-                } else if ("chime".equals(command[1])) {
-                    chimeChatIds.remove(message.getChatId().toString());
-                    bindCommand.removeBindCommand(message.getChatId().toString(), 2);
-                }
-                hookSendMessage(message.getChatId().toString(), String.format("已取消绑定 `%s` 消息通知", command[1]), message.getMessageId());
+                this.hookSendMessage(message.getChatId().toString(), "Unknown command!!\nExample:\n\n/bind hitokoto - 在本群绑定一言\n/bind chime - 整点报时", message.getMessageId());
+                return;
             }
+            this.hookSendMessage(message.getChatId().toString(), "Unknown command!!\nExample:\n\n/unbind hitokoto - 取消绑定本群一言\n/unbind chime - 取消整点报时", message.getMessageId());
+            return;
+        }
 
-        } else {
-            if (command[0].startsWith("/bind")) {
-                hookSendMessage(message.getChatId().toString(), "Unknown command!!\nExample:\n\n/bind hitokoto - 在本群绑定一言\n/bind chime - 整点报时", message.getMessageId());
-            } else {
-                hookSendMessage(message.getChatId().toString(), "Unknown command!!\nExample:\n\n/unbind hitokoto - 取消绑定本群一言\n/unbind chime - 取消整点报时", message.getMessageId());
+        if (command[0].startsWith("/bind")) {
+            if ("hitokoto".equals(command[1])) {
+                if (hitokotoChatIds.contains(message.getChatId().toString()) == false) {
+                    hitokotoChatIds.add(message.getChatId().toString());
+                    bindCommand.addBindCommand(message.getChatId().toString(), 1, message.getFrom().getId().toString());
+                } else {
+                    this.hookSendMessage(message.getChatId().toString(), String.format("已绑定过 `%s` 消息通知，无法重复绑定", command[1], message.getMessageId()));
+                    return;
+                }
+            } else if ("chime".equals(command[1])) {
+                if (chimeChatIds.contains(message.getChatId().toString()) == false) {
+                    chimeChatIds.add(message.getChatId().toString());
+                    bindCommand.addBindCommand(message.getChatId().toString(), 2, message.getFrom().getId().toString());
+                } else {
+                    this.hookSendMessage(message.getChatId().toString(), String.format("已绑定过 `%s` 消息通知，无法重复绑定", command[1], message.getMessageId()));
+                    return;
+                }
             }
+            this.hookSendMessage(message.getChatId().toString(), String.format("已成功绑定 `%s` 消息通知", command[1]), message.getMessageId());
+            return;
+        }
+
+        if (command[0].startsWith("/unbind")) {
+            if ("hitokoto".equals(command[1])) {
+                hitokotoChatIds.remove(message.getChatId().toString());
+                bindCommand.removeBindCommand(message.getChatId().toString(), 1);
+            } else if ("chime".equals(command[1])) {
+                chimeChatIds.remove(message.getChatId().toString());
+                bindCommand.removeBindCommand(message.getChatId().toString(), 2);
+            }
+            this.hookSendMessage(message.getChatId().toString(), String.format("已取消绑定 `%s` 消息通知", command[1]), message.getMessageId());
         }
     }
 
     private void handleAddWhiteList(Message message) throws TelegramApiException {
-        if (isAdmin(message.getFrom().getId())) {
-            hookSendMessage(message.getChatId().toString(), "你不是管理员。", message.getMessageId());
+        if (!isAdmin(message.getFrom().getId())) {
+            this.hookSendMessage(message.getChatId().toString(), "你不是管理员。", message.getMessageId());
             return;
         }
         String text = message.getText();
@@ -408,14 +433,16 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             text = text.replace(botName, "");
         }
         String command[] = text.split(" ");
-        if (command.length == 2) {
-            if (whiteListDao.addUser(message.getFrom().getId(), message.getChatId())) {
-                hookSendMessage(message.getChatId().toString(), "添加白名单成功", message.getMessageId());
-            } else {
-                hookSendMessage(message.getChatId().toString(), "添加白名单失败！！", message.getMessageId());
-            }
+
+        if (command.length < 2) {
+            this.hookSendMessage(message.getChatId().toString(), "命令格式错误 /whitelist [ID]", message.getMessageId());
+            return;
         }
-        return;
+        if (whiteListDao.addUser(message.getFrom().getId(), message.getChatId())) {
+            this.hookSendMessage(message.getChatId().toString(), "添加白名单成功", message.getMessageId());
+            return;
+        }
+        this.hookSendMessage(message.getChatId().toString(), "添加白名单失败！！", message.getMessageId());
     }
 
     /**
@@ -434,7 +461,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             return;
         try {
             for (String chatId : hitokotoChatIds) {
-                hookSendMessage(chatId, str2);
+                this.hookSendMessage(chatId, str2);
             }
         } catch (TelegramApiException e) {
             e.printStackTrace();
@@ -448,7 +475,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         logger.info("Tasks Chime call , time {}", DateUtil.date2String(new Date()));
         try {
             for (String chatId : chimeChatIds) {
-                hookSendMessage(chatId, "*整点报时* 现在时间：" + DateUtil.date2String(new Date(), "yyyy-MM-dd HH:mm"));
+                this.hookSendMessage(chatId, "*整点报时* 现在时间：" + DateUtil.date2String(new Date(), "yyyy-MM-dd HH:mm"));
             }
         } catch (TelegramApiException e) {
             e.printStackTrace();
@@ -508,6 +535,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             e.printStackTrace();
         }
     }
+
     // 测试用代码
     public void hookSendAudio(String fileName, String chatId, Integer replyMessageId) {
         SendVoice voice = new SendVoice();
@@ -533,7 +561,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     }
 
     private boolean isAdmin(Integer userId) {
-        return !adminList.contains(userId);
+        return adminList.contains(userId);
     }
 
     private boolean isWhiteList(Long userId, Long chatId) {
