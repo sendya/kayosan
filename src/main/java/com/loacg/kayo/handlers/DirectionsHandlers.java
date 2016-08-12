@@ -329,17 +329,17 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         if (command.length == 2) {
             if ("start".equals(command[1])) {
                 botStatus = true;
-                hookSendMessage(message.getChatId().toString(), this.getBotUsername() + " 已启动完毕", message1.getMessageId());
+                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已启动完毕");
             } else if ("stop".equals(command[1])) {
                 botStatus = false;
-                hookSendMessage(message.getChatId().toString(), this.getBotUsername() + " 已停止，除管理员启用将无法发送任何消息。", message1.getMessageId());
+                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已停止，除管理员启用将无法发送任何消息。");
             } else if ("restart".equals(command[1])) {
                 botStatus = true;
                 this.start();
-                hookSendMessage(message.getChatId().toString(), this.getBotUsername() + " 已重启完毕。", message1.getMessageId());
+                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已重启完毕。");
             } else if ("reload".equals(command[1])) {
                 this.start();
-                hookSendMessage(message.getChatId().toString(), this.getBotUsername() + " 已重载完毕。", message1.getMessageId());
+                hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已重载完毕。");
             }
         }
     }
