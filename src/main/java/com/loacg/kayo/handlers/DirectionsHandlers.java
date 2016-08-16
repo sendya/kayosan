@@ -442,7 +442,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         try {
             // git pull
             this.hookEditMessage(message1.getChatId().toString(), message1.getMessageId(), "正在构建新代码");
-            SudoExecutor.run(SudoExecutor.buildCommands("/bin/bash /data/robot/kayosan/build.sh"));
+            SudoExecutor.run(SudoExecutor.buildCommands("/data/robot/kayosan/build.sh"));
             this.hookEditMessage(message1.getChatId().toString(), message1.getMessageId(), "正在进行清理工作，请稍等");
             SudoExecutor.run(SudoExecutor.buildCommands("/usr/bin/mv /data/robot/kayosan/build/libs/kayosan-1.0.1-SNAPSHOT.jar /data/robot/kayosan-1.0.1-SNAPSHOT.jar"));
             // 构建完毕的程序移动到执行目录并且结束本进程，让 systemd 自动重启新程序
