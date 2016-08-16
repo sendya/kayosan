@@ -14,7 +14,7 @@ import java.util.Map;
  * Time: 8/11/2016 4:26 PM
  */
 @Repository
-public class Admin {
+public class AdminDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;

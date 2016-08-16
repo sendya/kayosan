@@ -16,7 +16,7 @@ public class SudoExecutor {
 
     private static Logger logger = LoggerFactory.getLogger(SudoExecutor.class);
 
-    protected static String sudoCmd = "sudo";
+    protected static String sudoCmd = "";
     protected static String shellName = "/bin/bash";
     protected static String shellParam = "-c";
 

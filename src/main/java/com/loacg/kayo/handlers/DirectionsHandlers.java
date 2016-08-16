@@ -1,10 +1,10 @@
 package com.loacg.kayo.handlers;
 
 import com.loacg.kayo.BotConfig;
-import com.loacg.kayo.dao.Admin;
-import com.loacg.kayo.dao.BindCommand;
+import com.loacg.kayo.dao.AdminDao;
+import com.loacg.kayo.dao.BindCommandDao;
 import com.loacg.kayo.dao.BotInfoDao;
-import com.loacg.kayo.dao.WhiteList;
+import com.loacg.kayo.dao.WhiteListDao;
 import com.loacg.kayo.entity.BotInfo;
 import com.loacg.utils.DateUtil;
 import com.loacg.utils.HttpClient;
@@ -17,20 +17,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
-import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.api.methods.send.SendVoice;
 import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
+import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Project: kayo
@@ -54,23 +52,26 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     private static List<String> chimeChatIds = new ArrayList<>();
     // Bind --> Hitokoto random message
     private static List<String> hitokotoChatIds = new ArrayList<>();
-
+    // Robot white list
     private static List<Integer> whiteList = new ArrayList<>();
+    // Robot info
+    private static Map<String, Object> botInfo = new HashMap<>();
+
     // Robot start time
     private static long bootTime;
 
     private static boolean botStatus = true;
 
     @Autowired
-    private BindCommand bindCommand;
+    private BindCommandDao bindCommandDao;
     @Autowired
-    private WhiteList whiteListDao;
+    private WhiteListDao whiteListDaoDao;
     @Autowired
-    private Admin adminDao;
+    private AdminDao adminDaoDao;
     @Autowired
     private BotInfoDao botInfoDao;
 
-    private Integer lastId = 0;
+    private static Integer locked = 0;
 
     public DirectionsHandlers() {
         bootTime = System.currentTimeMillis();
@@ -78,36 +79,44 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
     @PostConstruct
     public void start() {
+        logger.info("This is new class!!! 佛祖保佑，不出BUG！");
         logger.info("Starting {} robot", botConfig.getName());
 
-        List<Map<String, Object>> list = bindCommand.getChatIds(1);
+        List<Map<String, Object>> list = bindCommandDao.getChatIds(1);
         logger.info("Load bind chime {}", list.toString());
         chimeChatIds.clear();
         for (Map<String, Object> map : list) {
             chimeChatIds.add(map.get("chatId").toString());
         }
-        list = bindCommand.getChatIds(2);
+        list = bindCommandDao.getChatIds(2);
         logger.info("Load bind hitokoto {}", list.toString());
         hitokotoChatIds.clear();
         for (Map<String, Object> map : list) {
             hitokotoChatIds.add(map.get("chatId").toString());
         }
         adminList.clear();
-        adminList = adminDao.getAdminList();
+        adminList = adminDaoDao.getAdminList();
         logger.info("Load admin {}", adminList.toString());
+
+        botInfo.clear();
+        botInfo = botInfoDao.getMap();
+        logger.info("Load bot info {}", botInfo.toString());
     }
 
     public void init() {
-        if (botInfoDao.get("restart") != null && Integer.valueOf(botInfoDao.get("restart").getV().toString()) == 1) {
-            if (botInfoDao.get("last_message_id") != null && !"".equals(botInfoDao.get("last_message_id").getV())
-                    && botInfoDao.get("last_chat_id") != null && !"".equals(botInfoDao.get("last_chat_id").getV())) {
+        if (botInfo.get("restart") != null && Integer.valueOf(botInfo.get("restart").toString()) == 1) {
+            if (botInfo.get("last_message_id") != null && !"".equals(botInfo.get("last_message_id"))
+                    && botInfo.get("last_chat_id") != null && !"".equals(botInfo.get("last_chat_id"))) {
                 try {
-                    hookEditMessage(botInfoDao.get("last_chat_id").getV().toString(), Integer.valueOf(botInfoDao.get("last_message_id").getV().toString()), this.getBotUsername() + " 重启完毕。");
-                    botInfoDao.save(new BotInfo("restart", "0").build());
+                    logger.info("last_message_id {}", botInfo.get("last_message_id"));
+                    this.hookEditMessage(botInfo.get("last_chat_id").toString(), Integer.valueOf(String.valueOf(botInfo.get("last_message_id"))), this.getBotUsername() + " 重启完毕。", 0);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    botInfoDao.remove("restart");
                     botInfoDao.remove("last_message_id");
                     botInfoDao.remove("last_chat_id");
-                } catch (Exception e) {
-                    logger.error(e.getMessage());
+                    botInfo.clear();
                 }
             }
         }
@@ -205,7 +214,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                     return;
                 }
                 if (text.startsWith("/test")) {
-                    this.handleSendPhoto(message);
+                    this.handleSendTest(message);
                     return;
                 }
             } catch (TelegramApiException e) {
@@ -330,24 +339,48 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 message.getMessageId(), 0);
     }
 
-    public void handleSendPhoto(Message message) throws TelegramApiException {
-        SendPhoto photo = new SendPhoto();
-        photo.setChatId(message.getChatId().toString());
-        //photo.setPhoto("AgADBQADqqcxG-ZUBw6vstLIeXj_r5XusTIABASiieMFwI6rkTUAAgI");
-        // AgADBQADq6cxGyUSBw0ICEtTZSFvsP5eszIABGjCCqbNzDY6FjUAAgI
-        // AgADBQADq6cxGyUSBw0ICEtTZSFvsP5eszIABCWV_bK0lpXPGDUAAgI
-        // AgADBQADq6cxGyUSBw0ICEtTZSFvsP5eszIABChXXUwAAR6BtRc1AAIC
-        // AgADBQADq6cxGyUSBw0ICEtTZSFvsP5eszIABEqxT9U7fDRwFTUAAgI
-        photo.setPhoto("AgADBQADq6cxGyUSBw0ICEtTZSFvsP5eszIABChXXUwAAR6BtRc1AAIC");
-        // photo.setNewPhoto(new File("D:\\Anime_pic\\001\\3.jpg"));
-        photo.setCaption("你这个 Hentai ，/test 不是你想玩就能玩！\nSend photo tested..");
-        Message message1 = sendPhoto(photo);
+    public void handleSendTest(Message message) throws TelegramApiException {
+        if (!isAdmin(message.getFrom().getId())) {
+            this.hookSendMessage(message.getChatId().toString(), "你不是管理员。", message.getMessageId());
+            return;
+        }
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        List<InlineKeyboardButton> keyboardButtons = new ArrayList<>();
+
+        InlineKeyboardButton openCommandLink = new InlineKeyboardButton();
+        openCommandLink.setText("查看留言");
+        openCommandLink.setUrl("http://www.baidu.com/");
+
+        InlineKeyboardButton replyCommand = new InlineKeyboardButton();
+        replyCommand.setText("回复留言");
+        replyCommand.setUrl("http://www.baidu.com/");
+
+        keyboardButtons.add(openCommandLink);
+        keyboardButtons.add(replyCommand);
+
+        keyboard.add(keyboardButtons);
+
+        InlineKeyboardMarkup replyKeyboard = new InlineKeyboardMarkup();
+        replyKeyboard.setKeyboard(keyboard);
+
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.enableHtml(true);
+        sendMessage.setText("<b>博客留言：</b>\n" + "测试留言，测试测试~！！\n哈哈哈，测试个蛋（<a href=\"https://sendya.me/guestbook.html\">#307</a>）");
+        sendMessage.setChatId(message.getChatId().toString());
+        sendMessage.setReplyMarkup(replyKeyboard);
+        sendMessage(sendMessage);
     }
 
     private void handleControlCommand(Message message) throws TelegramApiException {
         if (!isAdmin(message.getFrom().getId())) {
             this.hookSendMessage(message.getChatId().toString(), "你不是管理员。", message.getMessageId());
             return;
+        }
+        if (locked == 1) {
+            if (!"".equals(botInfo.get("restart")) && !"".equals(botInfo.get("last_chat_id")) && !"".equals(botInfo.get("last_message_id"))) {
+                this.hookEditMessage(botInfo.get("last_chat_id").toString(), Integer.valueOf(botInfo.get("last_message_id").toString()), this.getBotUsername() + " 正在处理重启中,请勿重复使其执行。", 0);
+                return;
+            }
         }
         String text = message.getText();
         String botName = "@" + this.getBotUsername();
@@ -357,11 +390,6 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         String command[] = text.split(" ");
         if (command.length == 2) {
             Message message1 = this.hookSendMessage(message.getChatId().toString(), "正在执行命令", message.getMessageId());
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             if ("start".equals(command[1]) && !botStatus) {
                 botStatus = true;
                 this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已启动完毕", 0);
@@ -373,14 +401,16 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 return;
             }
             if ("restart".equals(command[1])) {
-                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 正在重启中。", 0);
-                botInfoDao.save(new BotInfo("restart", "0").build());
+                locked = 1;
+                botInfoDao.save(new BotInfo("restart", "1").build());
                 botInfoDao.save(new BotInfo("last_message_id", message1.getMessageId().toString()).build());
                 botInfoDao.save(new BotInfo("last_chat_id", message1.getChatId().toString()).build());
+                botInfo = botInfoDao.getMap(); // 更新设置一次数据
+                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 正在重启中。", 0);
                 try {
                     logger.info("Run SudoExecutor..");
-                    SudoExecutor.run(SudoExecutor.buildCommands("/bin/bash /root/robot/update.sh"));
-                    SudoExecutor.run(SudoExecutor.buildCommands("systemctl restart robot"));
+                    SudoExecutor.run(SudoExecutor.buildCommands("/bin/bash /data/robot/update.sh"));
+                    System.exit(0);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -424,7 +454,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             if ("hitokoto".equals(command[1])) {
                 if (hitokotoChatIds.contains(message.getChatId().toString()) == false) {
                     hitokotoChatIds.add(message.getChatId().toString());
-                    bindCommand.addBindCommand(message.getChatId().toString(), 1, message.getFrom().getId().toString());
+                    bindCommandDao.addBindCommand(message.getChatId().toString(), 1, message.getFrom().getId().toString());
                 } else {
                     this.hookSendMessage(message.getChatId().toString(), String.format("已绑定过 `%s` 消息通知，无法重复绑定", command[1], message.getMessageId()));
                     return;
@@ -432,7 +462,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             } else if ("chime".equals(command[1])) {
                 if (chimeChatIds.contains(message.getChatId().toString()) == false) {
                     chimeChatIds.add(message.getChatId().toString());
-                    bindCommand.addBindCommand(message.getChatId().toString(), 2, message.getFrom().getId().toString());
+                    bindCommandDao.addBindCommand(message.getChatId().toString(), 2, message.getFrom().getId().toString());
                 } else {
                     this.hookSendMessage(message.getChatId().toString(), String.format("已绑定过 `%s` 消息通知，无法重复绑定", command[1], message.getMessageId()));
                     return;
@@ -445,10 +475,10 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         if (command[0].startsWith("/unbind")) {
             if ("hitokoto".equals(command[1])) {
                 hitokotoChatIds.remove(message.getChatId().toString());
-                bindCommand.removeBindCommand(message.getChatId().toString(), 1);
+                bindCommandDao.removeBindCommand(message.getChatId().toString(), 1);
             } else if ("chime".equals(command[1])) {
                 chimeChatIds.remove(message.getChatId().toString());
-                bindCommand.removeBindCommand(message.getChatId().toString(), 2);
+                bindCommandDao.removeBindCommand(message.getChatId().toString(), 2);
             }
             this.hookSendMessage(message.getChatId().toString(), String.format("已取消绑定 `%s` 消息通知", command[1]), message.getMessageId());
         }
@@ -470,7 +500,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             this.hookSendMessage(message.getChatId().toString(), "命令格式错误 /whitelist [ID]", message.getMessageId());
             return;
         }
-        if (whiteListDao.addUser(message.getFrom().getId(), message.getChatId())) {
+        if (whiteListDaoDao.addUser(message.getFrom().getId(), message.getChatId())) {
             this.hookSendMessage(message.getChatId().toString(), "添加白名单成功", message.getMessageId());
             return;
         }

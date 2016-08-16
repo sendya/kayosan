@@ -13,7 +13,7 @@ import java.util.Map;
  * Time: 8/11/2016 3:42 PM
  */
 @Repository
-public class BindCommand {
+public class BindCommandDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;

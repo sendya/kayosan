@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
  * Time: 8/11/2016 4:16 PM
  */
 @Repository
-public class WhiteList {
+public class WhiteListDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
