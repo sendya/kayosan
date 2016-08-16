@@ -1,6 +1,7 @@
 package com.loacg.kayo.handlers;
 
 import com.loacg.kayo.BotConfig;
+import com.loacg.kayo.BuildVars;
 import com.loacg.kayo.dao.AdminDao;
 import com.loacg.kayo.dao.BindCommandDao;
 import com.loacg.kayo.dao.BotInfoDao;
@@ -27,8 +28,11 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static com.loacg.kayo.BotConfig.*;
 
 /**
  * Project: kayo
@@ -79,9 +83,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
     @PostConstruct
     public void start() {
-        logger.info("This is new class!!! 佛祖保佑，不出BUG！");
-        logger.info("Starting {} robot", botConfig.getName());
-
+        logger.info("Starting {} robot , version : {}", botConfig.getName(), BuildVars.VERSION);
         List<Map<String, Object>> list = bindCommandDao.getChatIds(1);
         logger.info("Load bind chime {}", list.toString());
         chimeChatIds.clear();
@@ -109,7 +111,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                     && botInfo.get("last_chat_id") != null && !"".equals(botInfo.get("last_chat_id"))) {
                 try {
                     logger.info("last_message_id {}", botInfo.get("last_message_id"));
-                    this.hookEditMessage(botInfo.get("last_chat_id").toString(), Integer.valueOf(String.valueOf(botInfo.get("last_message_id"))), this.getBotUsername() + " 重启完毕。", 0);
+                    this.hookEditMessage(botInfo.get("last_chat_id").toString(), Integer.valueOf(String.valueOf(botInfo.get("last_message_id"))), this.getBotUsername() + " 重启完毕。");
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
@@ -136,7 +138,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         Message message = update.getMessage();
 
-        Integer time = Integer.valueOf(String.valueOf(DateUtil.getTimeStamp() - 60));
+        Integer time = Integer.valueOf(String.valueOf(DateUtil.getTimeStamp() - 45));
 
         if (message.getDate() < time) {
             logger.info("User {} call command timeout", message.getFrom().getId());
@@ -148,34 +150,8 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         }
 
         logger.info(message.toString());
-        if (message.getNewChatMember() != null && message.getNewChatMember().getId() != null) {
-            try {
-                String name = "";
-                if (message.getNewChatMember().getLastName() != null)
-                    name = message.getNewChatMember().getLastName();
-                if (message.getNewChatMember().getFirstName() != null)
-                    name += message.getNewChatMember().getFirstName();
-                this.hookSendMessage(message.getChatId().toString(), String.format("热烈欢迎 `%s` 加入群组，请先查阅群置顶消息。", name), message.getMessageId());
-            } catch (TelegramApiException e) {
-                logger.error(e.getMessage());
-            }
-            return;
-        }
 
-        if (message.getLeftChatMember() != null && message.getLeftChatMember().getId() != null) {
-            try {
-                String name = "";
-                if (message.getLeftChatMember().getLastName() != null)
-                    name = message.getLeftChatMember().getLastName();
-                if (message.getLeftChatMember().getFirstName() != null)
-                    name += message.getLeftChatMember().getFirstName();
-                this.hookSendMessage(message.getChatId().toString(), String.format("群成员 `%s` 离开了群组，-1s。", name), message.getMessageId());
-            } catch (TelegramApiException e) {
-                logger.error(e.getMessage());
-            }
-            return;
-        }
-
+        this.handleWelcomeMessage(message);
         if (message != null && message.hasText()) {
             String text = message.getText();
             logger.info("User {}[{}] call command \"{}\" from \"{}\" , messageId: {}", message.getFrom().getUserName(), message.getFrom().getId(), text, message.getChatId(), message.getMessageId());
@@ -213,6 +189,9 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                     this.handleSendUptime(message);
                     return;
                 }
+                if (text.startsWith("/rebuild")) {
+                    this.handleRebuild(message);
+                }
                 if (text.startsWith("/test")) {
                     this.handleSendTest(message);
                     return;
@@ -220,6 +199,36 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void handleWelcomeMessage(Message message) {
+        if (message.getNewChatMember() != null && message.getNewChatMember().getId() != null) {
+            try {
+                String name = "";
+                if (message.getNewChatMember().getLastName() != null)
+                    name = message.getNewChatMember().getLastName();
+                if (message.getNewChatMember().getFirstName() != null)
+                    name += message.getNewChatMember().getFirstName();
+                this.hookSendMessage(message.getChatId().toString(), String.format("热烈欢迎 `%s` 加入群组，请先查阅群置顶消息。", name), message.getMessageId(), BuildVars.FORMAT_MARKDOWN);
+            } catch (TelegramApiException e) {
+                logger.error(e.getMessage());
+            }
+            return;
+        }
+
+        if (message.getLeftChatMember() != null && message.getLeftChatMember().getId() != null) {
+            try {
+                String name = "";
+                if (message.getLeftChatMember().getLastName() != null)
+                    name = message.getLeftChatMember().getLastName();
+                if (message.getLeftChatMember().getFirstName() != null)
+                    name += message.getLeftChatMember().getFirstName();
+                this.hookSendMessage(message.getChatId().toString(), String.format("群成员 `%s` 离开了群组，-1s。", name), message.getMessageId(), BuildVars.FORMAT_MARKDOWN);
+            } catch (TelegramApiException e) {
+                logger.error(e.getMessage());
+            }
+            return;
         }
     }
 
@@ -237,7 +246,11 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     }
 
     public Message hookSendMessage(String chatId, String content, Integer replyMessageId) throws TelegramApiException {
-        return this.hookSendMessage(chatId, content, replyMessageId, 1);
+        return this.hookSendMessage(chatId, content, replyMessageId, BuildVars.FORMAT_NONE);
+    }
+
+    public Message hookEditMessage(String chatId, Integer messageId, String content) throws TelegramApiException {
+        return hookEditMessage(chatId, messageId, content, BuildVars.FORMAT_NONE);
     }
 
     /**
@@ -249,30 +262,19 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
      * @throws TelegramApiException
      */
     public Message hookSendMessage(String chatId, String content, Integer replyMessageId, Integer textFormat) throws TelegramApiException {
-        Message message = null;
         SendMessage response = new SendMessage();
-        switch (textFormat) {
-            case 1:
-                response.enableMarkdown(true);
-                break;
-            case 2:
-                response.enableHtml(true);
-                break;
-            case 0:
-            default:
-                break;
-        }
+
+        if (textFormat == BuildVars.FORMAT_MARKDOWN)
+            response.enableMarkdown(true);
+        else if (textFormat == BuildVars.FORMAT_HTML)
+            response.enableHtml(true);
+
         response.setText(content);
         response.setChatId(chatId);
         if (replyMessageId != 0) {
             response.setReplyToMessageId(replyMessageId);
         }
-        message = sendMessage(response);
-        return message;
-    }
-
-    public Message hookEditMessage(String chatId, Integer messageId, String content) throws TelegramApiException {
-        return hookEditMessage(chatId, messageId, content, 1);
+        return sendMessage(response);
     }
 
     /**
@@ -285,19 +287,13 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
      * @throws TelegramApiException
      */
     public Message hookEditMessage(String chatId, Integer messageId, String content, Integer textFormat) throws TelegramApiException {
-        Message message = null;
         EditMessageText response = new EditMessageText();
-        switch (textFormat) {
-            case 1:
-                response.enableMarkdown(true);
-                break;
-            case 2:
-                response.enableHtml(true);
-                break;
-            case 0:
-            default:
-                break;
-        }
+
+        if (textFormat == BuildVars.FORMAT_MARKDOWN)
+            response.enableMarkdown(true);
+        else if (textFormat == BuildVars.FORMAT_HTML)
+            response.enableHtml(true);
+
         response.setText(content);
         response.setChatId(chatId);
         response.setMessageId(messageId);
@@ -314,19 +310,20 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 .append("/unbind [command] - Unbind delay Scheduled tasks\n")
                 .append("/photo - Get random photo\n")
                 .append("/uptime - Robot runtime\n")
+                .append("/rebuild - Build robot and restart\n")
                 .append("Contact me via @Sendya\n\n")
                 .append("Thanks for using @" + this.getBotUsername());
 
-        this.hookSendMessage(message.getChatId().toString(), sb.toString(), 0, 2);
+        this.hookSendMessage(message.getChatId().toString(), sb.toString(), 0, BuildVars.FORMAT_HTML);
     }
 
     private void handleSendWhoami(Message message) throws TelegramApiException {
         StringBuffer sb = new StringBuffer();
         if (!message.isUserMessage()) {
-            this.hookSendMessage(message.getChatId().toString(), sb.append("无法在群组或频道查看自己的 Telegram ID\n请私密 @").append(this.getBotUsername()).toString(), message.getMessageId(), 0);
+            this.hookSendMessage(message.getChatId().toString(), sb.append("无法在群组或频道查看自己的 Telegram ID\n请私密 @").append(this.getBotUsername()).toString(), message.getMessageId(), BuildVars.FORMAT_NONE);
             return;
         }
-        this.hookSendMessage(message.getChatId().toString(), String.format("您的 Telegram ID 为 `%s`", message.getFrom().getId()), message.getMessageId(), 1);
+        this.hookSendMessage(message.getChatId().toString(), String.format("您的 Telegram ID 为 `%s`", message.getFrom().getId()), message.getMessageId(), BuildVars.FORMAT_MARKDOWN);
     }
 
     private void handleSendPong(Message message) throws TelegramApiException {
@@ -378,7 +375,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         }
         if (locked == 1) {
             if (!"".equals(botInfo.get("restart")) && !"".equals(botInfo.get("last_chat_id")) && !"".equals(botInfo.get("last_message_id"))) {
-                this.hookEditMessage(botInfo.get("last_chat_id").toString(), Integer.valueOf(botInfo.get("last_message_id").toString()), this.getBotUsername() + " 正在处理重启中,请勿重复使其执行。", 0);
+                this.hookEditMessage(botInfo.get("last_chat_id").toString(), Integer.valueOf(botInfo.get("last_message_id").toString()), this.getBotUsername() + " 正在处理重启中,请勿重复使其执行。");
                 return;
             }
         }
@@ -392,12 +389,12 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             Message message1 = this.hookSendMessage(message.getChatId().toString(), "正在执行命令", message.getMessageId());
             if ("start".equals(command[1]) && !botStatus) {
                 botStatus = true;
-                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已启动完毕", 0);
+                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已启动完毕");
                 return;
             }
             if ("stop".equals(command[1]) && botStatus) {
                 botStatus = false;
-                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已停止，除管理员启用将无法发送任何消息。", 0);
+                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已停止，除管理员启用将无法发送任何消息。");
                 return;
             }
             if ("restart".equals(command[1])) {
@@ -406,7 +403,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 botInfoDao.save(new BotInfo("last_message_id", message1.getMessageId().toString()).build());
                 botInfoDao.save(new BotInfo("last_chat_id", message1.getChatId().toString()).build());
                 botInfo = botInfoDao.getMap(); // 更新设置一次数据
-                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 正在重启中。", 0);
+                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 正在重启中。");
                 try {
                     logger.info("Run SudoExecutor..");
                     SudoExecutor.run(SudoExecutor.buildCommands("/bin/bash /data/robot/update.sh"));
@@ -418,9 +415,48 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             }
             if ("reload".equals(command[1])) {
                 this.start();
-                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已重载完毕。", 0);
+                this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 已重载完毕。");
                 return;
             }
+        }
+    }
+
+    /**
+     * 构建新版本 (临时)
+     * @param message
+     * @throws TelegramApiException
+     */
+    private void handleRebuild(Message message) throws TelegramApiException {
+        if (!isAdmin(message.getFrom().getId())) {
+            this.hookSendMessage(message.getChatId().toString(), "你不是管理员。", message.getMessageId());
+            return;
+        }
+        if (locked == 1) {
+            if (!"".equals(botInfo.get("restart")) && !"".equals(botInfo.get("last_chat_id")) && !"".equals(botInfo.get("last_message_id"))) {
+                this.hookEditMessage(botInfo.get("last_chat_id").toString(), Integer.valueOf(botInfo.get("last_message_id").toString()), this.getBotUsername() + " 正在处理重启中,请勿重复使其执行。");
+                return;
+            }
+        }
+        Message message1 = this.hookSendMessage(message.getChatId().toString(), "正在执行命令", message.getMessageId());
+
+        try {
+            // git pull
+            this.hookEditMessage(message1.getChatId().toString(), message1.getMessageId(), "正在构建新代码");
+            SudoExecutor.run(SudoExecutor.buildCommands("/bin/bash /data/robot/kayosan/build.sh"));
+            this.hookEditMessage(message1.getChatId().toString(), message1.getMessageId(), "正在进行清理工作，请稍等");
+            SudoExecutor.run(SudoExecutor.buildCommands("/usr/bin/mv /data/robot/kayosan/build/libs/kayosan-1.0.1-SNAPSHOT.jar /data/robot/kayosan-1.0.1-SNAPSHOT.jar"));
+            // 构建完毕的程序移动到执行目录并且结束本进程，让 systemd 自动重启新程序
+            locked = 1;
+            botInfoDao.save(new BotInfo("restart", "1").build());
+            botInfoDao.save(new BotInfo("last_message_id", message1.getMessageId().toString()).build());
+            botInfoDao.save(new BotInfo("last_chat_id", message1.getChatId().toString()).build());
+            botInfo = botInfoDao.getMap(); // 更新设置一次数据
+            this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 正在重启中。");
+            System.exit(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -456,7 +492,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                     hitokotoChatIds.add(message.getChatId().toString());
                     bindCommandDao.addBindCommand(message.getChatId().toString(), 1, message.getFrom().getId().toString());
                 } else {
-                    this.hookSendMessage(message.getChatId().toString(), String.format("已绑定过 `%s` 消息通知，无法重复绑定", command[1], message.getMessageId()));
+                    this.hookSendMessage(message.getChatId().toString(), String.format("已绑定过 `%s` 消息通知，无法重复绑定", command[1], message.getMessageId()), BuildVars.FORMAT_MARKDOWN);
                     return;
                 }
             } else if ("chime".equals(command[1])) {
@@ -464,11 +500,11 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                     chimeChatIds.add(message.getChatId().toString());
                     bindCommandDao.addBindCommand(message.getChatId().toString(), 2, message.getFrom().getId().toString());
                 } else {
-                    this.hookSendMessage(message.getChatId().toString(), String.format("已绑定过 `%s` 消息通知，无法重复绑定", command[1], message.getMessageId()));
+                    this.hookSendMessage(message.getChatId().toString(), String.format("已绑定过 `%s` 消息通知，无法重复绑定", command[1], message.getMessageId()), BuildVars.FORMAT_MARKDOWN);
                     return;
                 }
             }
-            this.hookSendMessage(message.getChatId().toString(), String.format("已成功绑定 `%s` 消息通知", command[1]), message.getMessageId());
+            this.hookSendMessage(message.getChatId().toString(), String.format("已成功绑定 `%s` 消息通知", command[1]), message.getMessageId(), BuildVars.FORMAT_MARKDOWN);
             return;
         }
 
@@ -480,7 +516,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 chimeChatIds.remove(message.getChatId().toString());
                 bindCommandDao.removeBindCommand(message.getChatId().toString(), 2);
             }
-            this.hookSendMessage(message.getChatId().toString(), String.format("已取消绑定 `%s` 消息通知", command[1]), message.getMessageId());
+            this.hookSendMessage(message.getChatId().toString(), String.format("已取消绑定 `%s` 消息通知", command[1]), message.getMessageId(), BuildVars.FORMAT_MARKDOWN);
         }
     }
 
@@ -615,11 +651,6 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-
-    public void hookSendInlineKeyboard() {
-
     }
 
     private boolean isAdmin(Integer userId) {
