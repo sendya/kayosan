@@ -49,6 +49,12 @@ public class SudoExecutor {
             sb.append(line);
             logger.info(line);
         }
+        input = new LineNumberReader(new InputStreamReader(process.getErrorStream()));
+        while ((line = input.readLine()) != null) {
+            sb.append(line);
+            logger.error(line);
+        }
+        // process.waitFor();
         return sb.toString();
     }
 
