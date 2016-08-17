@@ -455,6 +455,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             botInfoDao.save(new BotInfo("last_message_id", message1.getMessageId().toString()).build());
             botInfoDao.save(new BotInfo("last_chat_id", message1.getChatId().toString()).build());
             botInfo = botInfoDao.getMap(); // 更新设置一次数据
+            logger.info("Insert to db success");
             this.hookEditMessage(message.getChatId().toString(), message1.getMessageId(), this.getBotUsername() + " 正在重启中。");
             System.exit(0);
         } catch (IOException e) {
