@@ -1,3 +1,3 @@
 cd /data/robot/kayosan/
 git pull
-gradle build -x test
+/usr/local/gradle/bin/gradle build -x test
