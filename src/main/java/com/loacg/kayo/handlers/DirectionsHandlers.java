@@ -109,7 +109,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                     && botInfo.get("last_chat_id") != null && !"".equals(botInfo.get("last_chat_id"))) {
                 try {
                     logger.info("last_message_id {}", botInfo.get("last_message_id"));
-                    this.hookEditMessage(botInfo.get("last_chat_id").toString(), Integer.valueOf(String.valueOf(botInfo.get("last_message_id"))), this.getBotUsername() + " 重启完毕。");
+                    this.hookEditMessage(botInfo.get("last_chat_id").toString(), Integer.valueOf(String.valueOf(botInfo.get("last_message_id"))), this.getBotUsername() + String.format(" 重启完毕。ver: <code>%s</code>", BuildVars.VERSION), BuildVars.FORMAT_HTML);
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
@@ -439,17 +439,18 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
         try {
             String result = null;
+            locked = 1;
             // git pull
             this.hookEditMessage(message1.getChatId().toString(), message1.getMessageId(), "正在构建新代码");
             result = SudoExecutor.run(SudoExecutor.buildCommands("cd /data/robot/kayosan/ && /usr/bin/git pull && /usr/local/gradle/bin/gradle build -x test"));
             //result = SudoExecutor.run(SudoExecutor.buildCommands("/data/robot/kayosan/build.sh"));
             logger.info(result);
             this.hookEditMessage(message1.getChatId().toString(), message1.getMessageId(), "正在进行清理工作，请稍等");
-            result = SudoExecutor.run(SudoExecutor.buildCommands("/usr/bin/mv -f /data/robot/kayosan/build/libs/kayosan-1.0.1-SNAPSHOT.jar /data/robot/kayosan-1.0.1-SNAPSHOT.jar"));
+            result = SudoExecutor.run(SudoExecutor.buildCommands("mv -f /data/robot/kayosan/build/libs/kayosan-1.0.1-SNAPSHOT.jar /data/robot/kayosan-1.0.1-SNAPSHOT.jar"));
             logger.info(result);
 
             // 构建完毕的程序移动到执行目录并且结束本进程，让 systemd 自动重启新程序
-            locked = 1;
+
             botInfoDao.save(new BotInfo("restart", "1").build());
             botInfoDao.save(new BotInfo("last_message_id", message1.getMessageId().toString()).build());
             botInfoDao.save(new BotInfo("last_chat_id", message1.getChatId().toString()).build());
