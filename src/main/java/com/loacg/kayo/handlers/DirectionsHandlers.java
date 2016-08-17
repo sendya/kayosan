@@ -32,8 +32,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.loacg.kayo.BotConfig.*;
-
 /**
  * Project: kayo
  * Author: Sendya <18x@loacg.com>
@@ -440,11 +438,15 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         Message message1 = this.hookSendMessage(message.getChatId().toString(), "正在执行命令", message.getMessageId());
 
         try {
+            String result = null;
             // git pull
             this.hookEditMessage(message1.getChatId().toString(), message1.getMessageId(), "正在构建新代码");
-            SudoExecutor.run(SudoExecutor.buildCommands("/data/robot/kayosan/build.sh"));
+            result = SudoExecutor.run(SudoExecutor.buildCommands("/data/robot/kayosan/build.sh"));
+            logger.info(result);
             this.hookEditMessage(message1.getChatId().toString(), message1.getMessageId(), "正在进行清理工作，请稍等");
-            SudoExecutor.run(SudoExecutor.buildCommands("/usr/bin/mv /data/robot/kayosan/build/libs/kayosan-1.0.1-SNAPSHOT.jar /data/robot/kayosan-1.0.1-SNAPSHOT.jar"));
+            result = SudoExecutor.run(SudoExecutor.buildCommands("/usr/bin/mv /data/robot/kayosan/build/libs/kayosan-1.0.1-SNAPSHOT.jar /data/robot/kayosan-1.0.1-SNAPSHOT.jar"));
+            logger.info(result);
+
             // 构建完毕的程序移动到执行目录并且结束本进程，让 systemd 自动重启新程序
             locked = 1;
             botInfoDao.save(new BotInfo("restart", "1").build());

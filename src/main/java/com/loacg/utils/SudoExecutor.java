@@ -20,19 +20,22 @@ public class SudoExecutor {
     protected static String shellName = "/bin/bash";
     protected static String shellParam = "-c";
 
-    public static void run(String cmd) throws IOException, InterruptedException {
+    public static String run(String cmd) throws IOException, InterruptedException {
         String sudoCmd = "sudo " + cmd;
         logger.info(sudoCmd);
         Process process = Runtime.getRuntime().exec(sudoCmd);
         InputStreamReader ir = new InputStreamReader(process.getInputStream());
         LineNumberReader input = new LineNumberReader(ir);
+        StringBuffer sb = new StringBuffer();
         String line;
         while ((line = input.readLine()) != null) {
+            sb.append(line);
             logger.info(line);
         }
+        return sb.toString();
     }
 
-    public static void run(String[] cmds) throws IOException, InterruptedException {
+    public static String run(String[] cmds) throws IOException, InterruptedException {
         for (String cmd : cmds) {
             logger.info(cmd);
         }
@@ -40,10 +43,13 @@ public class SudoExecutor {
         Process process = Runtime.getRuntime().exec(cmds);
         InputStreamReader ir = new InputStreamReader(process.getInputStream());
         LineNumberReader input = new LineNumberReader(ir);
+        StringBuffer sb = new StringBuffer();
         String line;
         while ((line = input.readLine()) != null) {
+            sb.append(line);
             logger.info(line);
         }
+        return sb.toString();
     }
 
     /**
