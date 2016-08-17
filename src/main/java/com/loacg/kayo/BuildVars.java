@@ -1,7 +1,5 @@
 package com.loacg.kayo;
 
-import org.telegram.telegrambots.api.objects.Message;
-
 /**
  * Project: kayosan
  * Author: Sendya <18x@loacg.com>
@@ -9,7 +7,7 @@ import org.telegram.telegrambots.api.objects.Message;
  */
 public class BuildVars {
 
-    public static final String VERSION = "v1.0.816.2146";
+    public static final String VERSION = "v1.0.817.1245";
 
     public static final Integer FORMAT_NONE = 0;
     public static final Integer FORMAT_MARKDOWN = 1;

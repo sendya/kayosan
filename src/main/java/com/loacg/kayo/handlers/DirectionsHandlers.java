@@ -82,13 +82,13 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     @PostConstruct
     public void start() {
         logger.info("Starting {} robot , version : {}", botConfig.getName(), BuildVars.VERSION);
-        List<Map<String, Object>> list = bindCommandDao.getChatIds(1);
+        List<Map<String, Object>> list = bindCommandDao.getChatIds(2);
         logger.info("Load bind chime {}", list.toString());
         chimeChatIds.clear();
         for (Map<String, Object> map : list) {
             chimeChatIds.add(map.get("chatId").toString());
         }
-        list = bindCommandDao.getChatIds(2);
+        list = bindCommandDao.getChatIds(1);
         logger.info("Load bind hitokoto {}", list.toString());
         hitokotoChatIds.clear();
         for (Map<String, Object> map : list) {
@@ -139,7 +139,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         Integer time = Integer.valueOf(String.valueOf(DateUtil.getTimeStamp() - 45));
 
         if (message.getDate() < time) {
-            logger.info("User {} call command timeout", message.getFrom().getId());
+            logger.info("User {} call command {} timeout", message.getFrom().getId(), message.getText());
             return;
         }
 
