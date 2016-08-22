@@ -442,8 +442,10 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             locked = 1;
             // git pull
             this.hookEditMessage(message1.getChatId().toString(), message1.getMessageId(), "正在构建新代码");
-            result = SudoExecutor.run(SudoExecutor.buildCommands("cd /data/robot/kayosan/ && /usr/bin/git pull && /usr/local/gradle/bin/gradle build -x test"));
-            //result = SudoExecutor.run(SudoExecutor.buildCommands("/data/robot/kayosan/build.sh"));
+            result = SudoExecutor.run(SudoExecutor.buildCommands("cd /data/robot/kayosan/ && /usr/bin/git pull"));
+            logger.info(result);
+            this.hookEditMessage(message1.getChatId().toString(), message1.getMessageId(), result);
+            result = SudoExecutor.run(SudoExecutor.buildCommands("cd /data/robot/kayosan/ && /usr/local/gradle/bin/gradle build -x test"));
             logger.info(result);
             this.hookEditMessage(message1.getChatId().toString(), message1.getMessageId(), "正在进行清理工作，请稍等");
             result = SudoExecutor.run(SudoExecutor.buildCommands("mv -f /data/robot/kayosan/build/libs/kayosan-1.0.1-SNAPSHOT.jar /data/robot/kayosan-1.0.1-SNAPSHOT.jar"));
@@ -578,7 +580,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         logger.info("Tasks Chime call , time {}", DateUtil.date2String(new Date()));
         try {
             for (String chatId : chimeChatIds) {
-                this.hookSendMessage(chatId, "<strong>[整点报时]</strong> 现在时间：<code>" + DateUtil.date2String(new Date(), "yyyy-MM-dd HH:mm") + "</code>", 0, BuildVars.FORMAT_HTML);
+                this.hookSendMessage(chatId, "<strong>[整点报时]</strong> 现在时间：<code>" + DateUtil.date2String(new Date(), "HH") + "</code> 点整", 0, BuildVars.FORMAT_HTML);
             }
         } catch (TelegramApiException e) {
             e.printStackTrace();

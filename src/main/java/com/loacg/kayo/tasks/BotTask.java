@@ -34,7 +34,7 @@ public class BotTask {
         }
     }
 
-    @Scheduled(cron = "0 0 7-23/1 * * *")
+    @Scheduled(cron = "0 0 0,7,12 * * *")
     public void delaySendChime() {
         if(bot != null  && bot.getBotStatus()) {
             bot.delaySendChime();
