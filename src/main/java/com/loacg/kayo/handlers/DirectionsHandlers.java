@@ -473,10 +473,12 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
      * @param message
      */
     private void handleBindCommand(Message message) throws TelegramApiException {
+        /* 2016.08.22 13:48 disable admin power
         if (!isAdmin(message.getFrom().getId())) {
             this.hookSendMessage(message.getChatId().toString(), "你不是管理员。", message.getMessageId());
             return;
         }
+        */
         String text = message.getText();
         String botName = "@" + this.getBotUsername();
         if (text.indexOf(botName) != -1) {
