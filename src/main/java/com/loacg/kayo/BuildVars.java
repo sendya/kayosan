@@ -7,7 +7,7 @@ package com.loacg.kayo;
  */
 public class BuildVars {
 
-    public static final String VERSION = "v1.0.822.1349";
+    public static final String VERSION = "v1.0.822.1349-b1";
 
     public static final Integer FORMAT_NONE = 0;
     public static final Integer FORMAT_MARKDOWN = 1;

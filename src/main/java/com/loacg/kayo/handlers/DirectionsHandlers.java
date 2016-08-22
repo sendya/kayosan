@@ -488,10 +488,10 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
         if (command.length < 2) {
             if (command[0].startsWith("/bind")) {
-                this.hookSendMessage(message.getChatId().toString(), "Unknown command!!\nExample:\n\n/bind hitokoto - 在本群绑定一言\n/bind chime - 整点报时", message.getMessageId());
+                this.hookSendMessage(message.getChatId().toString(), "Unknown command!!\nExample:\n\n/bind hitokoto - 在本群绑定一言\n/bind chime - 整点报时\n/bind typecho [event.id] - typecho留言通知", message.getMessageId());
                 return;
             }
-            this.hookSendMessage(message.getChatId().toString(), "Unknown command!!\nExample:\n\n/unbind hitokoto - 取消绑定本群一言\n/unbind chime - 取消整点报时", message.getMessageId());
+            this.hookSendMessage(message.getChatId().toString(), "Unknown command!!\nExample:\n\n/unbind hitokoto - 取消绑定本群一言\n/unbind chime - 取消整点报时\n/unbind typecho [event.id] - 取消typecho留言通知", message.getMessageId());
             return;
         }
 
@@ -512,6 +512,9 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                     this.hookSendMessage(message.getChatId().toString(), String.format("已绑定过 `%s` 消息通知，无法重复绑定", command[1], message.getMessageId()), BuildVars.FORMAT_MARKDOWN);
                     return;
                 }
+            } else if ("typecho".equals(command[1])) {
+                this.hookSendMessage(message.getChatId().toString(), String.format("目前暂不支持 `%s` 消息通知，无法绑定", command[1], message.getMessageId()), BuildVars.FORMAT_MARKDOWN);
+                return;
             }
             this.hookSendMessage(message.getChatId().toString(), String.format("已成功绑定 `%s` 消息通知", command[1]), message.getMessageId(), BuildVars.FORMAT_MARKDOWN);
             return;
@@ -524,6 +527,9 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             } else if ("chime".equals(command[1])) {
                 chimeChatIds.remove(message.getChatId().toString());
                 bindCommandDao.removeBindCommand(message.getChatId().toString(), 2);
+            } else if ("typecho".equals(command[1])) {
+                this.hookSendMessage(message.getChatId().toString(), String.format("未找到 `%s` 消息通知", command[1]), message.getMessageId(), BuildVars.FORMAT_MARKDOWN);
+                return;
             }
             this.hookSendMessage(message.getChatId().toString(), String.format("已取消绑定 `%s` 消息通知", command[1]), message.getMessageId(), BuildVars.FORMAT_MARKDOWN);
         }
