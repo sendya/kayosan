@@ -206,7 +206,11 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     private void handleWelcomeMessage(Message message) {
         if (message.getNewChatMember() != null && message.getNewChatMember().getId() != null) {
             try {
-                String name = message.getNewChatMember().getFirstName() + message.getNewChatMember().getLastName();
+                String name = "";
+                if (message.getNewChatMember().getLastName() != null)
+                    name = message.getNewChatMember().getFirstName();
+                if (message.getNewChatMember().getFirstName() != null)
+                    name += message.getNewChatMember().getLastName();
                 this.hookSendMessage(message.getChatId().toString(), String.format("热烈欢迎 `%s` 加入群组，请先查阅群置顶消息。", name), message.getMessageId(), BuildVars.FORMAT_MARKDOWN);
             } catch (TelegramApiException e) {
                 logger.error(e.getMessage());
@@ -216,7 +220,11 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
         if (message.getLeftChatMember() != null && message.getLeftChatMember().getId() != null) {
             try {
-                String name = message.getLeftChatMember().getFirstName() + message.getLeftChatMember().getLastName();
+                String name = "";
+                if (message.getLeftChatMember().getLastName() != null)
+                    name = message.getLeftChatMember().getFirstName();
+                if (message.getLeftChatMember().getFirstName() != null)
+                    name += message.getLeftChatMember().getLastName();
                 this.hookSendMessage(message.getChatId().toString(), String.format("群成员 `%s` 离开了群组，-1s。", name), message.getMessageId(), BuildVars.FORMAT_MARKDOWN);
             } catch (TelegramApiException e) {
                 logger.error(e.getMessage());
