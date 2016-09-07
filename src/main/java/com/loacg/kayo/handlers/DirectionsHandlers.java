@@ -684,7 +684,23 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     public void blogCommentCheck() {
         try {
             for (String chatId : commentChatIds) {
-                String json = HttpClient.get("https://sendya.duoshuo.com/api/posts/list.json?order=desc&source=duoshuo%2Crepost&max_depth=1&limit=5&related%5B%5D=thread&related%5B%5D=iplocation&nonce=57beb68e13da1&status=all");
+
+                String key = chatId+"_comment_num";
+                String nonceKey = key + "_nonce";
+
+                Integer commentNum = 0;
+                String nonce = null;
+                if(botInfo.get(key) != null) {
+                    commentNum = Integer.valueOf(String.valueOf(botInfo.get(key)));
+                    if (botInfo.get(nonceKey) != null) {
+                        nonce = String.valueOf(botInfo.get(nonceKey));
+                    }
+                }
+                if (nonce == null || "".equals(nonce)) {
+                    logger.info("ID: {} 未绑定 nonceKey 无法获取消息，已主动跳过。", chatId);
+                    continue;
+                }
+                String json = HttpClient.get(nonce);
                 Map<?, ?> jsonObj = JsonUtils.json2Map(json);
                 Map<?, ?> cursor = (Map<?, ?>) jsonObj.get("cursor");
                 Integer total = (Integer) cursor.get("total");
@@ -697,17 +713,12 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
                 logger.info("总留言数 {}, 最新一条的评论是来自 {} 的 {} 发送的，内容为： {} ,发送时间： {}", total, comment.get("iplocation"), author.get("name"), comment.get("message"), comment.get("created_at"));
 
-                String key = chatId+"_comment_num";
-                Integer commentNum = 0;
-                if(botInfo.get(key) != null) {
-                    commentNum= Integer.valueOf(String.valueOf(botInfo.get(key)));
-                }
                 if (commentNum < total) {
                     logger.info("角色： \"{}\"", comment.get("role_name"));
                     if("管理员".equals(comment.get("role_name"))) {
                         botInfo.put(key, total);
                         botInfoDao.save(new BotInfo(key, String.valueOf(total)));
-                        return;
+                        continue;
                     }
                     logger.info("有新的留言正在推送至 Telegram chat Id: {}", chatId);
                     StringBuffer sb = new StringBuffer()
