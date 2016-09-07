@@ -54,6 +54,8 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     private static List<String> chimeChatIds = new ArrayList<>();
     // Bind --> Hitokoto random message
     private static List<String> hitokotoChatIds = new ArrayList<>();
+
+    private static List<String> commentChatIds = new ArrayList<>();
     // Robot white list
     private static List<Integer> whiteList = new ArrayList<>();
     // Robot info
@@ -100,6 +102,13 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         adminList.clear();
         adminList = adminDaoDao.getAdminList();
         logger.info("Load admin {}", adminList.toString());
+
+        list = bindCommandDao.getChatIds(5);
+        logger.info("Load bind comment {}", list.toString());
+        commentChatIds.clear();
+        for (Map<String, Object> map : list) {
+            commentChatIds.add(map.get("chatId").toString());
+        }
 
         botInfo.clear();
         botInfo = botInfoDao.getMap();
@@ -669,6 +678,52 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+
+    public void blogCommentCheck() {
+        try {
+            for (String chatId : commentChatIds) {
+                String json = HttpClient.get("https://sendya.duoshuo.com/api/posts/list.json?order=desc&source=duoshuo%2Crepost&max_depth=1&limit=30&related%5B%5D=thread&related%5B%5D=iplocation&nonce=57beb68e13da1&status=all");
+                Map<?, ?> jsonObj = JsonUtils.json2Map(json);
+                Map<?, ?> cursor = (Map<?, ?>) jsonObj.get("cursor");
+                Integer total = (Integer) cursor.get("total");
+                List<?> newResponse = (List<?>) jsonObj.get("newResponse");
+                String newCommentId = (String) newResponse.get(0);
+                Map<?, ?> comments = (Map<?, ?>) jsonObj.get("parentPosts");
+                Map<?, ?> comment = (Map<?, ?>) comments.get(newCommentId);
+                Map<?, ?> author = (Map<?, ?>) comment.get("author");
+                Map<?, ?> thread = (Map<?, ?>) comment.get("thread");
+
+                logger.info("总留言数 {}, 最新一条的评论是来自 {} 的 {} 发送的，内容为： {} ,发送时间： {}", total, comment.get("iplocation"), author.get("name"), comment.get("message"), comment.get("created_at"));
+
+                String key = chatId+"_comment_num";
+                Integer commentNum = 0;
+                if(botInfo.get(key) != null) {
+                    commentNum= Integer.valueOf(String.valueOf(botInfo.get(key)));
+                }
+                if (commentNum < total) {
+                    StringBuffer sb = new StringBuffer()
+                            .append("<b>[新的博客留言]</b>\n")
+                            .append("<i>" + author.get("name") + "</i>")
+                            .append(" 说：\n")
+                            .append(comment.get("message"))
+                            .append("\n\n点击查看：<a href=\"")
+                            .append(thread.get("url"))
+                            .append("\">")
+                            .append(thread.get("title"))
+                            .append("</a>");
+                    logger.info(sb.toString());
+                    botInfo.put(key, total);
+                    botInfoDao.save(new BotInfo(key, String.valueOf(total)));
+                    this.hookSendMessage(chatId, sb.toString(), 0, BuildVars.FORMAT_HTML);
+                }
+            }
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     private boolean isAdmin(Integer userId) {

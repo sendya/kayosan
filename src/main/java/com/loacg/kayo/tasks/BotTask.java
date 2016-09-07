@@ -40,4 +40,11 @@ public class BotTask {
             bot.delaySendChime();
         }
     }
+
+    @Scheduled(cron = "*/10 * * * * *")
+    public void blogCommentCheck() {
+        if(bot != null) {
+            bot.blogCommentCheck();
+        }
+    }
 }
