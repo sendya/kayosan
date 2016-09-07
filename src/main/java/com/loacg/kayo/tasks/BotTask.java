@@ -41,7 +41,7 @@ public class BotTask {
         }
     }
 
-    @Scheduled(cron = "*/10 * * * * *")
+    @Scheduled(cron = "*/6 * * * * *")
     public void blogCommentCheck() {
         if(bot != null) {
             bot.blogCommentCheck();

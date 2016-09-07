@@ -702,7 +702,14 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 if(botInfo.get(key) != null) {
                     commentNum= Integer.valueOf(String.valueOf(botInfo.get(key)));
                 }
-                if (commentNum < total && !"管理员".equals(comment.get("role_name"))) {
+                if (commentNum < total) {
+                    logger.info("角色： \"{}\"", comment.get("role_name"));
+                    if("管理员".equals(comment.get("role_name"))) {
+                        botInfo.put(key, total);
+                        botInfoDao.save(new BotInfo(key, String.valueOf(total)));
+                        return;
+                    }
+                    logger.info("有新的留言正在推送至 Telegram chat Id: {}", chatId);
                     StringBuffer sb = new StringBuffer()
                             .append("<b>[新的博客留言]</b>\n")
                             .append("<i>" + author.get("name") + "</i>")
@@ -713,7 +720,6 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                             .append("\">")
                             .append(thread.get("title"))
                             .append("</a>");
-                    logger.info(sb.toString());
                     botInfo.put(key, total);
                     botInfoDao.save(new BotInfo(key, String.valueOf(total)));
                     this.hookSendMessage(chatId, sb.toString(), 0, BuildVars.FORMAT_HTML);

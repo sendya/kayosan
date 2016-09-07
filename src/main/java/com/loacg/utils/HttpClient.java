@@ -43,7 +43,7 @@ import java.util.Set;
 public class HttpClient {
 
 
-    static final int timeOut = 6 * 1000;
+    static final int timeOut = 4 * 1000;
 
     private static CloseableHttpClient httpClient = null;
 
