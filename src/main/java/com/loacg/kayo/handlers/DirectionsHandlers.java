@@ -684,7 +684,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
     public void blogCommentCheck() {
         try {
             for (String chatId : commentChatIds) {
-                String json = HttpClient.get("https://sendya.duoshuo.com/api/posts/list.json?order=desc&source=duoshuo%2Crepost&max_depth=1&limit=30&related%5B%5D=thread&related%5B%5D=iplocation&nonce=57beb68e13da1&status=all");
+                String json = HttpClient.get("https://sendya.duoshuo.com/api/posts/list.json?order=desc&source=duoshuo%2Crepost&max_depth=1&limit=5&related%5B%5D=thread&related%5B%5D=iplocation&nonce=57beb68e13da1&status=all");
                 Map<?, ?> jsonObj = JsonUtils.json2Map(json);
                 Map<?, ?> cursor = (Map<?, ?>) jsonObj.get("cursor");
                 Integer total = (Integer) cursor.get("total");
@@ -702,7 +702,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
                 if(botInfo.get(key) != null) {
                     commentNum= Integer.valueOf(String.valueOf(botInfo.get(key)));
                 }
-                if (commentNum < total) {
+                if (commentNum < total && !"管理员".equals(comment.get("role_name"))) {
                     StringBuffer sb = new StringBuffer()
                             .append("<b>[新的博客留言]</b>\n")
                             .append("<i>" + author.get("name") + "</i>")
