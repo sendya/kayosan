@@ -457,7 +457,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
             result = SudoExecutor.run(SudoExecutor.buildCommands("cd /data/robot/kayosan/ && /usr/bin/git pull"));
             logger.info(result);
             this.hookEditMessage(message1.getChatId().toString(), message1.getMessageId(), result);
-            result = SudoExecutor.run(SudoExecutor.buildCommands("cd /data/robot/kayosan/ && /usr/local/gradle/bin/gradle build -x test"));
+            result = SudoExecutor.run(SudoExecutor.buildCommands("cd /data/robot/kayosan/ && /root/.sdkman/candidates/gradle/current/bin/gradle build -x test"));
             logger.info(result);
             this.hookEditMessage(message1.getChatId().toString(), message1.getMessageId(), "正在进行清理工作，请稍等");
             result = SudoExecutor.run(SudoExecutor.buildCommands("mv -f /data/robot/kayosan/build/libs/kayosan-1.0.1-SNAPSHOT.jar /data/robot/kayosan-1.0.1-SNAPSHOT.jar"));
