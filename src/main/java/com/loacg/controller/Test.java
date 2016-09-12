@@ -1,9 +1,7 @@
 package com.loacg.controller;
 
-import com.loacg.kayo.handlers.DirectionsHandlers;
+import com.loacg.kayo.handlers.Directions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,20 +23,16 @@ public class Test {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private DirectionsHandlers bot;
+    private Directions bot;
 
     @RequestMapping("/query/{name}")
     public @ResponseBody Object queryData(@PathVariable("name") String name) {
-
-        bot.hookSendAudio(name, "-1001064858540", 0);
 
         return "success";
     }
 
     @RequestMapping("/send/voice")
     public @ResponseBody Object queryData() throws IOException {
-        Resource resource = new ClassPathResource("audio/a00.m4a");
-        bot.hookSendAudio(resource.getFile(), "-1001064858540", 0);
 
         return "success";
     }

@@ -1,7 +1,7 @@
 package com.loacg.controller;
 
 import com.loacg.entity.Response;
-import com.loacg.kayo.handlers.DirectionsHandlers;
+import com.loacg.kayo.handlers.Directions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +19,7 @@ public class Event {
     @Autowired
     private JdbcTemplate jdbcTemplate;
     @Autowired
-    private DirectionsHandlers bot;
+    private Directions bot;
 
     @RequestMapping(value = "/action/{eventType}", method = RequestMethod.POST)
     @ResponseBody

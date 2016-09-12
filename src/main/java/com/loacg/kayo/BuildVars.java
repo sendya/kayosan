@@ -12,5 +12,6 @@ public class BuildVars {
     public static final Integer FORMAT_NONE = 0;
     public static final Integer FORMAT_MARKDOWN = 1;
     public static final Integer FORMAT_HTML = 2;
+    public static final Integer COMMAND_TIME_OUT = 45;
 
 }

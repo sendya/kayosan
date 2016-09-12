@@ -8,14 +8,12 @@ import org.springframework.stereotype.Component;
  * Author: Sendya <18x@loacg.com>
  * Time: 8/1/2016 5:11 PM
  */
-
 @Component
 @ConfigurationProperties(prefix = "robot.kayo")
 public class BotConfig {
 
     private String token;
     private String name;
-    private String api;
 
     public String getToken() {
         return token;
@@ -31,13 +29,5 @@ public class BotConfig {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getApi() {
-        return api;
-    }
-
-    public void setApi(String api) {
-        this.api = api;
     }
 }
