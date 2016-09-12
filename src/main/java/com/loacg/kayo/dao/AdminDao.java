@@ -2,8 +2,11 @@ package com.loacg.kayo.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,10 +24,9 @@ public class AdminDao {
 
     public List<Integer> getAdminList() {
         List<Integer> admins = new ArrayList<>();
-        List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT `userId` FROM `admin`");
-        for (Map<String, Object> map : list) {
-            admins.add(Integer.valueOf(map.get("userId").toString()));
-        }
+        jdbcTemplate.query("SELECT `userId` FROM `admin`", rs -> {
+            admins.add(rs.getInt("userId"));
+        });
         return admins;
     }
 }
