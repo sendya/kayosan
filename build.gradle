@@ -20,6 +20,7 @@ jar {
 	baseName = 'kayosan'
 	version = '1.0.1-SNAPSHOT'
 }
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -28,12 +29,15 @@ repositories {
 	maven { url "https://jitpack.io" }
 }
 
+configurations {
+	compile.exclude module: "spring-boot-starter-tomcat"
+}
 
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter-jdbc')
-	compile('org.springframework.boot:spring-boot-starter-mail')
 	compile('org.springframework.boot:spring-boot-starter-web')
-	compile('com.github.rubenlagus:TelegramBots:v2.3.3.6')
+	compile('org.springframework.boot:spring-boot-starter-undertow')
+	compile('com.github.rubenlagus:TelegramBots:v2.3.5')
 	compile('org.apache.commons:commons-lang3:3.4')
 	compile('com.alibaba:druid:1.0.23')
 	runtime('mysql:mysql-connector-java')
@@ -43,7 +47,7 @@ dependencies {
 
 eclipse {
 	classpath {
-		 containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
-		 containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8'
+		containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
+		containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8'
 	}
 }
