@@ -10,3 +10,6 @@ classes/
 # spring config
 src/main/resources/application*.yml
 /src/main/resources/application*.yml
+
+# test dir
+src/test/

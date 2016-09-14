@@ -2,6 +2,7 @@ package com.loacg.kayo.handlers;
 
 import com.loacg.kayo.BotConfig;
 import com.loacg.kayo.BuildVars;
+import com.loacg.kayo.dao.BotInfoDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,8 @@ import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+
+import javax.annotation.PostConstruct;
 
 /**
  * Project: kayosan
@@ -24,8 +27,23 @@ public class Directions extends TelegramLongPollingBot {
     private static final Logger logger = LoggerFactory.getLogger(Directions.class);
 
     @Autowired private BotConfig botConfig;
+    @Autowired private BotInfoDao botInfoDao;
 
     private static long bootTime; // robot start time
+
+    public Directions() {
+        bootTime = System.currentTimeMillis();
+    }
+
+    @PostConstruct
+    public void start() {
+        logger.info("Starting {} robot , version : {}", botConfig.getName(), BuildVars.VERSION);
+
+    }
+
+    public void init() {
+
+    }
 
     @Override
     public void onUpdateReceived(Update update) {

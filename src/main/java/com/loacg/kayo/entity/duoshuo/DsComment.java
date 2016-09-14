@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.loacg.kayo.interfaces.IEntityObject;
 import org.json.JSONObject;
-import sun.dc.pr.PRError;
 
 import java.io.IOException;
 
@@ -19,7 +18,7 @@ public class DsComment implements IEntityObject {
 
     private static final String LOG_ID = "log_id";
     private static final String SITE_ID = "site_id";
-    private static final String USER_ID = "user_Id";
+    private static final String USER_ID = "user_id";
     private static final String ACTION = "action";
     private static final String META = "meta";
     private static final String DATE = "date";
@@ -40,6 +39,8 @@ public class DsComment implements IEntityObject {
     private String action;
     @JsonProperty(META)
     private DsMeta meta;
+    @JsonProperty(META)
+    private Object metaObject;
     @JsonProperty(DATE)
     private Integer date;
 
@@ -50,16 +51,107 @@ public class DsComment implements IEntityObject {
     public DsComment(JSONObject jsonObject) {
         super();
         this.logId = jsonObject.getLong(LOG_ID);
-
+        this.siteId = jsonObject.getInt(SITE_ID);
+        this.userId = jsonObject.getLong(USER_ID);
+        this.action = jsonObject.getString(ACTION);
+        if (ACTION_CREATE.equals(this.action)) {
+            this.meta = new DsMeta(jsonObject.getJSONObject(META));
+        } else {
+            this.metaObject = jsonObject.getJSONObject(META);
+        }
+        this.date = jsonObject.getInt(DATE);
     }
 
     @Override
     public void serialize(JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        gen.writeStartObject();
+        gen.writeNumberField(LOG_ID, logId);
+        gen.writeNumberField(SITE_ID, siteId);
+        gen.writeNumberField(USER_ID, userId);
+        gen.writeStringField(ACTION, action);
+        if (ACTION_CREATE.equals(this.action)) {
+            gen.writeObjectField(META, meta);
+        } else {
+            gen.writeObjectField(META, metaObject);
+        }
 
+        gen.writeNumberField(DATE, date);
+
+        gen.writeEndObject();
+        gen.flush();
     }
 
     @Override
     public void serializeWithType(JsonGenerator gen, SerializerProvider serializers, TypeSerializer typeSer) throws IOException {
         serialize(gen, serializers);
+    }
+
+    public Long getLogId() {
+        return logId;
+    }
+
+    public void setLogId(Long logId) {
+        this.logId = logId;
+    }
+
+    public Integer getSiteId() {
+        return siteId;
+    }
+
+    public void setSiteId(Integer siteId) {
+        this.siteId = siteId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    public DsMeta getMeta() {
+        return meta;
+    }
+
+    public void setMeta(DsMeta meta) {
+        this.meta = meta;
+    }
+
+    public Object getMetaObject() {
+        return metaObject;
+    }
+
+    public void setMetaObject(Object metaObject) {
+        this.metaObject = metaObject;
+    }
+
+    public Integer getDate() {
+        return date;
+    }
+
+    public void setDate(Integer date) {
+        this.date = date;
+    }
+
+    @Override
+    public String toString() {
+        return "DsComment{" +
+                "logId=" + logId +
+                ", siteId=" + siteId +
+                ", userId=" + userId +
+                ", action='" + action + '\'' +
+                ", meta=" + meta +
+                ", metaObject=" + metaObject +
+                ", date=" + date +
+                '}';
     }
 }
