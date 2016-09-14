@@ -2,6 +2,8 @@ package com.loacg.controller;
 
 import com.loacg.entity.Response;
 import com.loacg.kayo.handlers.Directions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +16,9 @@ import org.telegram.telegrambots.TelegramApiException;
  */
 @RestController
 @RequestMapping("/event")
-public class Event {
+public class EventController {
+
+    private static final Logger logger = LoggerFactory.getLogger(EventController.class);
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -45,5 +49,14 @@ public class Event {
         }
 
         return response;
+    }
+
+    @RequestMapping(value = "/callback/duoshuo.json", method = RequestMethod.POST)
+    @ResponseBody
+    public Response callback(String action, String signature) {
+        logger.info(action);
+        logger.info(signature);
+
+        return Response.build();
     }
 }
