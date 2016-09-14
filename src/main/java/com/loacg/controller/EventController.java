@@ -8,6 +8,7 @@ import com.loacg.kayo.entity.duoshuo.DsComment;
 import com.loacg.kayo.entity.duoshuo.DsMeta;
 import com.loacg.kayo.entity.duoshuo.DsSiteInfo;
 import com.loacg.kayo.handlers.Directions;
+import com.loacg.utils.DecriptUtil;
 import com.loacg.utils.HttpClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -71,14 +72,17 @@ public class EventController {
     @RequestMapping(value = "/callback/{user}.json", method = RequestMethod.POST)
     @ResponseBody
     public Response callback(HttpServletRequest request, @PathVariable("user") String user, String action, String signature) {
-        System.out.println(request.getParameterMap());
-
-        logger.info(action);
-        logger.info(signature);
         String key = user + "_duoshuo_info";
-
         BotInfo dsInfo = botInfoDao.get(key);
+        if (dsInfo == null || dsInfo.getV() == null || "".equals(dsInfo.getV().toString()))
+            return Response.build().setMessage("Not bind site key!");
+
         DsSiteInfo siteInfo = new DsSiteInfo(new JSONObject(dsInfo.getV().toString()));
+        String signatureCreate = DecriptUtil.getSignature(buildParam(request.getParameterMap()).getBytes(), siteInfo.getSecret().getBytes());
+        if (!signature.equals(signatureCreate)) {
+            logger.info("来源不可信，源加密： {}, 传递加密: {}", signatureCreate, signature);
+            return Response.build().setMessage("Signature is not available");
+        }
 
         StringBuffer url = new StringBuffer()
                 .append("http://api.duoshuo.com/log/list.json")
@@ -88,7 +92,7 @@ public class EventController {
                 .append(siteInfo.getSecret())
                 .append("&since_id=")
                 .append(siteInfo.getSinceId())
-                .append("&limit=5")
+                .append("&limit=2")
                 .append("&order=desc");
 
         String jsonStr = HttpClient.get(url.toString());
@@ -96,7 +100,6 @@ public class EventController {
         JSONObject jsonObject = new JSONObject(jsonStr);
         JSONArray arr = jsonObject.getJSONArray("response");
         DsComment comment = new DsComment(arr.getJSONObject(0));
-        logger.info(comment.toString());
         StringBuffer message = new StringBuffer();
         if (comment.getMeta() instanceof DsMeta) {
             DsMeta meta = comment.getMeta();
@@ -110,11 +113,12 @@ public class EventController {
                     .append("\">")
                     .append("#" + meta.getThreadKey())
                     .append("</a>");
-        }
-        try {
-            bot.hookSendMessage(user, message.toString(), 0, BuildVars.FORMAT_HTML);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
+
+            try {
+                bot.hookSendMessage(user, message.toString(), 0, BuildVars.FORMAT_HTML);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
         }
 
         return Response.build();

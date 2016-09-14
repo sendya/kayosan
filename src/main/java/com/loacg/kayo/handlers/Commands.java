@@ -24,4 +24,10 @@ public class Commands {
 
         return;
     }
+
+    public static void bindSite(Message message) {
+
+
+
+    }
 }
