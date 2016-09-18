@@ -61,9 +61,8 @@ public class Directions extends TelegramLongPollingBot {
             }
 
             if (message.hasText()) {
-                Commands.handler(message);
+                new Commands().handler(message);
             }
-
         } catch (Exception e) {
             logger.error("onUpdateReceived ERROR: {}", e.getMessage());
         }

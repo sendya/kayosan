@@ -107,13 +107,17 @@ public class EventController {
 
             message.append("<b>[新的博客留言]</b>\n")
                     .append(meta.getAuthorName())
-                    .append(" 说：\n")
+                    .append(" 说(")
+                    .append("<a href=\"")
+                    .append(siteInfo.getSiteUrl())
+                    .append("/").append(meta.getThreadKey()).append("/\">#")
+                    .append(meta.getPostId()).append("</a>):\n")
                     .append(meta.getMessage())
-                    .append("\n\n点击查看：<a href=\"")
+                    .append("\n\n点击查看(<a href=\"")
                     .append(siteInfo.getSiteUrl() + "/" + meta.getThreadKey())
-                    .append("\">")
-                    .append("#" + meta.getThreadKey())
-                    .append("</a>");
+                    .append("/\">#")
+                    .append(meta.getThreadKey())
+                    .append(")</a>");
 
             try {
                 bot.hookSendMessage(user, message.toString(), 0, BuildVars.FORMAT_HTML);

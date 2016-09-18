@@ -1,9 +1,19 @@
 package com.loacg.kayo.handlers;
 
+import com.loacg.kayo.dao.BotInfoDao;
+import com.loacg.kayo.entity.BotInfo;
+import com.loacg.kayo.entity.duoshuo.DsSiteInfo;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Project: kayosan
@@ -15,17 +25,72 @@ public class Commands {
     private static final Logger logger = LoggerFactory.getLogger(Commands.class);
 
     @Autowired private Directions directions;
+    @Autowired private BotInfoDao botInfoDao;
 
-    public static void handler(Message message) {
+    public void handler(Message message) {
 
         String text = message.getText();
         logger.info("User {}[{}] call command \"{}\" from \"{}\" , messageId: {}", message.getFrom().getUserName(), message.getFrom().getId(), text, message.getChatId(), message.getMessageId());
 
+        if (message.getReplyToMessage().hasText()) {
+            replyComment(message);
+        }
 
         return;
     }
 
-    public static void bindSite(Message message) {
+    public void bindSite(Message message) {
+
+
+
+    }
+
+    public void replyComment(Message message) {
+        // \(#\S+\)
+        if ("".equals(message.getReplyToMessage().getText())) {
+            return;
+        }
+        String str = message.getReplyToMessage().getText();
+        System.out.println(str);
+        String pattern = "\\(#(\\S+)\\)";
+        Pattern r = Pattern.compile(pattern);
+        Matcher m = r.matcher(str);
+        List<String> list = new ArrayList<>();
+        for(int i=0; i<2; ++i) {
+            m.find();
+            list.add(m.group(1));
+        }
+
+
+
+        String key = message.getChatId() + "_duoshuo_info";
+        BotInfo dsInfo = botInfoDao.get(key);
+        if (dsInfo == null || dsInfo.getV() == null || "".equals(dsInfo.getV().toString())) {
+            try {
+                directions.hookSendMessage(message.getChatId().toString(), "您未绑定留言功能。", message.getMessageId(), 0);
+                return;
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
+
+        DsSiteInfo siteInfo = new DsSiteInfo(new JSONObject(dsInfo.getV().toString()));
+
+        StringBuffer url = new StringBuffer()
+                .append("http://api.duoshuo.com/posts/create.json")
+                .append("?short_name=")
+                .append(siteInfo.getShortName())
+                .append("&secret=")
+                .append(siteInfo.getSinceId())
+                .append("&thread_key=")
+                .append(list.get(1))
+                .append("&parent_id=")
+                .append(list.get(0))
+                .append("&remote_auth=")
+                .append("xxx")
+                .append("&message=")
+                .append(message.getText());
+
 
 
 

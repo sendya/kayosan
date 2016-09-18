@@ -1,7 +1,5 @@
 package com.loacg.utils;
 
-import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
-
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
@@ -9,6 +7,8 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.HashMap;
 
 /**
  * Project: kayosan
@@ -168,7 +168,7 @@ public class DecriptUtil {
      *
      * @param data 待加密的数据
      * @param key  加密使用的key
-     * @return 生成MD5编码的字符串
+     * @return 生成 BASE64 编码的字符串
      * @throws InvalidKeyException
      * @throws NoSuchAlgorithmException
      */
@@ -180,11 +180,24 @@ public class DecriptUtil {
             mac.init(signingKey);
             byte[] rawHmac = mac.doFinal(data);
 
-            encode = Base64.encode(rawHmac);
+            encode = Base64.getEncoder().encodeToString(rawHmac);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         return encode;
+    }
+
+    public static String JWSSign(String shortName, String userKey, String secret) {
+
+
+        final JWTSigner signer = new JWTSigner(secret);
+
+        final HashMap<String, Object> claims = new HashMap<String, Object>();
+        claims.put("short_name", shortName); // 必须项
+        claims.put("user_key", userKey); // 必须项
+
+        return signer.sign(claims);
     }
 }

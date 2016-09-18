@@ -19,8 +19,8 @@ public class DsSiteInfo implements IEntityObject {
     private static final String SHORT_NAME = "short_name";
     private static final String SECRET = "secret";
     private static final String SINCE_ID = "since_id";
-
     private static final String SITE_URL = "site_url";
+    private static final String USER_ID = "user_id";
 
     @JsonProperty(SHORT_NAME)
     private String shortName;
@@ -30,6 +30,8 @@ public class DsSiteInfo implements IEntityObject {
     private Long sinceId;
     @JsonProperty(SITE_URL)
     private String siteUrl;
+    @JsonProperty(USER_ID)
+    private Integer userId;
 
     public DsSiteInfo() {
         super();
@@ -41,6 +43,7 @@ public class DsSiteInfo implements IEntityObject {
         this.secret = jsonObject.getString(SECRET);
         this.sinceId = jsonObject.getLong(SINCE_ID);
         this.siteUrl = jsonObject.getString(SITE_URL);
+        this.userId = jsonObject.getInt(USER_ID);
     }
 
     @Override
@@ -50,6 +53,7 @@ public class DsSiteInfo implements IEntityObject {
         gen.writeStringField(SECRET, secret);
         gen.writeNumberField(SINCE_ID, sinceId);
         gen.writeStringField(SITE_URL, siteUrl);
+        gen.writeNumberField(USER_ID, userId);
         gen.writeEndObject();
         gen.flush();
     }
@@ -91,6 +95,14 @@ public class DsSiteInfo implements IEntityObject {
         this.siteUrl = siteUrl;
     }
 
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
+
     @Override
     public String toString() {
         return "DsSiteInfo{" +
@@ -98,6 +110,7 @@ public class DsSiteInfo implements IEntityObject {
                 ", secret='" + secret + '\'' +
                 ", sinceId=" + sinceId +
                 ", siteUrl='" + siteUrl + '\'' +
+                ", userId=" + userId +
                 '}';
     }
 }
