@@ -26,16 +26,18 @@ public class BotInfo {
         return k;
     }
 
-    public void setK(String k) {
+    public BotInfo setK(String k) {
         this.k = k;
+        return this;
     }
 
     public Object getV() {
         return v;
     }
 
-    public void setV(String v) {
+    public BotInfo setV(String v) {
         this.v = v;
+        return this;
     }
 
     @Override

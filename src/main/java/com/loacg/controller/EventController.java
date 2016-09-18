@@ -10,6 +10,7 @@ import com.loacg.kayo.entity.duoshuo.DsSiteInfo;
 import com.loacg.kayo.handlers.Directions;
 import com.loacg.utils.DecriptUtil;
 import com.loacg.utils.HttpClient;
+import com.loacg.utils.JsonUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -116,6 +117,9 @@ public class EventController {
 
             try {
                 bot.hookSendMessage(user, message.toString(), 0, BuildVars.FORMAT_HTML);
+                siteInfo.setSinceId(comment.getLogId());
+                botInfoDao.save(dsInfo.setV(JsonUtils.toJson(siteInfo)));
+
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
