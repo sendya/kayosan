@@ -1,5 +1,7 @@
 package com.loacg.utils;
 
+import com.auth0.jwt.JWTSigner;
+
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
@@ -191,10 +193,9 @@ public class DecriptUtil {
 
     public static String JWSSign(String shortName, String userKey, String secret) {
 
-
         final JWTSigner signer = new JWTSigner(secret);
 
-        final HashMap<String, Object> claims = new HashMap<String, Object>();
+        final HashMap<String, Object> claims = new HashMap<>();
         claims.put("short_name", shortName); // 必须项
         claims.put("user_key", userKey); // 必须项
 
