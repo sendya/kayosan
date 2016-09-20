@@ -201,10 +201,8 @@ public class DecriptUtil {
 
         final HashMap<String, Object> claims = new HashMap<>();
         claims.put("short_name", shortName); // 必须项
-        claims.put("user_key", userKey); // 必须项
+        claims.put("user_key", "1"); // 必须项
         claims.put("name", "Sendya");
-        logger.info("claims: {}", claims);
-
         return signer.sign(claims);
     }
 }

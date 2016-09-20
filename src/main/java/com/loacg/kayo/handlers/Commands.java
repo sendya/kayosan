@@ -5,6 +5,8 @@ import com.loacg.kayo.entity.BotInfo;
 import com.loacg.kayo.entity.duoshuo.DsSiteInfo;
 import com.loacg.utils.DecriptUtil;
 import com.loacg.utils.HttpClient;
+import com.loacg.utils.JsonUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +15,6 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,7 +76,7 @@ public class Commands {
         BotInfo dsInfo = botInfoDao.get(key);
         if (dsInfo == null || dsInfo.getV() == null || "".equals(dsInfo.getV().toString())) {
             try {
-                directions.hookSendMessage(message.getChatId().toString(), "您未绑定留言功能。", message.getMessageId(), 0);
+                directions.hookSendMessage(message.getChatId().toString(), "您未绑定评论功能。", message.getMessageId(), 0);
                 return;
             } catch (TelegramApiException e) {
                 e.printStackTrace();
@@ -91,11 +92,23 @@ public class Commands {
         params.put("parent_id", list.get(0));
         params.put("jwt", DecriptUtil.JWSSign(siteInfo.getShortName(), siteInfo.getUserId().toString(), siteInfo.getSecret()));
         params.put("message", message.getText());
-        logger.info("留言参数： {}", params);
+        logger.info("评论参数： {}", params);
         try {
             String jsonStr = HttpClient.post("http://api.duoshuo.com/posts/create.json", params);
-            logger.info("留言结果： {}", jsonStr);
-        } catch (IOException e) {
+            logger.info("评论结果： {}", jsonStr);
+            if(StringUtils.isEmpty(jsonStr)) {
+                directions.hookSendMessage(message.getChatId().toString(), "评论失败，API返回空", message.getMessageId(), 0);
+                return;
+            }
+            Map<?, ?> jsonObj = JsonUtils.json2Map(jsonStr);
+            int code = Integer.valueOf(jsonObj.get("code").toString());
+            if(code == 0) {
+                directions.hookSendMessage(message.getChatId().toString(), "评论成功", message.getMessageId(), 0);
+                return;
+            }
+            directions.hookSendMessage(message.getChatId().toString(), "评论出错", message.getMessageId(), 0);
+            return;
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
