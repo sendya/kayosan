@@ -28,6 +28,7 @@ public class Directions extends TelegramLongPollingBot {
 
     @Autowired private BotConfig botConfig;
     @Autowired private BotInfoDao botInfoDao;
+    @Autowired private Commands commands;
 
     private static long bootTime; // robot start time
 
@@ -61,7 +62,7 @@ public class Directions extends TelegramLongPollingBot {
             }
 
             if (message.hasText()) {
-                new Commands().handler(message);
+                commands.handler(message);
             }
         } catch (Exception e) {
             logger.error("onUpdateReceived ERROR: {}", e.getMessage());

@@ -1,6 +1,8 @@
 package com.loacg.utils;
 
 import com.auth0.jwt.JWTSigner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
@@ -18,6 +20,8 @@ import java.util.HashMap;
  * Time: 2016/9/14 14:15
  */
 public class DecriptUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(DecriptUtil.class);
 
     private static final String HMAC_SHA1 = "HmacSHA1";
 
@@ -198,6 +202,8 @@ public class DecriptUtil {
         final HashMap<String, Object> claims = new HashMap<>();
         claims.put("short_name", shortName); // 必须项
         claims.put("user_key", userKey); // 必须项
+        claims.put("name", "Sendya");
+        logger.info("claims: {}", claims);
 
         return signer.sign(claims);
     }

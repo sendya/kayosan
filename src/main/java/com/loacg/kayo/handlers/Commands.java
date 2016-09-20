@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
 
@@ -25,6 +26,7 @@ import java.util.regex.Pattern;
  * Author: Sendya <18x@loacg.com>
  * Time: 2016/9/12 15:34
  */
+@Component
 public class Commands {
 
     private static final Logger logger = LoggerFactory.getLogger(Commands.class);
@@ -69,6 +71,7 @@ public class Commands {
 
 
         String key = message.getChatId() + "_duoshuo_info";
+
         BotInfo dsInfo = botInfoDao.get(key);
         if (dsInfo == null || dsInfo.getV() == null || "".equals(dsInfo.getV().toString())) {
             try {
@@ -81,13 +84,12 @@ public class Commands {
 
         DsSiteInfo siteInfo = new DsSiteInfo(new JSONObject(dsInfo.getV().toString()));
 
-
         Map<String, Object> params = new HashMap<>();
         params.put("short_name", siteInfo.getShortName());
         params.put("secret", siteInfo.getSecret());
         params.put("thread_key", list.get(1));
         params.put("parent_id", list.get(0));
-        params.put("remote_auth", DecriptUtil.JWSSign(siteInfo.getShortName(), siteInfo.getUserId().toString(), siteInfo.getSecret()));
+        params.put("jwt", DecriptUtil.JWSSign(siteInfo.getShortName(), siteInfo.getUserId().toString(), siteInfo.getSecret()));
         params.put("message", message.getText());
         logger.info("留言参数： {}", params);
         try {
