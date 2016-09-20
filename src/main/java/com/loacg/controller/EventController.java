@@ -97,7 +97,7 @@ public class EventController {
                 .append("&order=desc");
 
         String jsonStr = HttpClient.get(url.toString());
-
+        logger.info("Content [S: {}", jsonStr);
         JSONObject jsonObject = new JSONObject(jsonStr);
         JSONArray arr = jsonObject.getJSONArray("response");
         DsComment comment = new DsComment(arr.getJSONObject(0));

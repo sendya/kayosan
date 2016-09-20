@@ -3,6 +3,8 @@ package com.loacg.kayo.handlers;
 import com.loacg.kayo.dao.BotInfoDao;
 import com.loacg.kayo.entity.BotInfo;
 import com.loacg.kayo.entity.duoshuo.DsSiteInfo;
+import com.loacg.utils.DecriptUtil;
+import com.loacg.utils.HttpClient;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,8 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -76,23 +81,21 @@ public class Commands {
 
         DsSiteInfo siteInfo = new DsSiteInfo(new JSONObject(dsInfo.getV().toString()));
 
-        StringBuffer url = new StringBuffer()
-                .append("http://api.duoshuo.com/posts/create.json")
-                .append("?short_name=")
-                .append(siteInfo.getShortName())
-                .append("&secret=")
-                .append(siteInfo.getSinceId())
-                .append("&thread_key=")
-                .append(list.get(1))
-                .append("&parent_id=")
-                .append(list.get(0))
-                .append("&remote_auth=")
-                .append("xxx")
-                .append("&message=")
-                .append(message.getText());
 
-
-
+        Map<String, Object> params = new HashMap<>();
+        params.put("short_name", siteInfo.getShortName());
+        params.put("secret", siteInfo.getSecret());
+        params.put("thread_key", list.get(1));
+        params.put("parent_id", list.get(0));
+        params.put("remote_auth", DecriptUtil.JWSSign(siteInfo.getShortName(), siteInfo.getUserId().toString(), siteInfo.getSecret()));
+        params.put("message", message.getText());
+        logger.info("留言参数： {}", params);
+        try {
+            String jsonStr = HttpClient.post("http://api.duoshuo.com/posts/create.json", params);
+            logger.info("留言结果： {}", jsonStr);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 }
