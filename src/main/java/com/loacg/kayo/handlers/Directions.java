@@ -38,14 +38,14 @@ import java.util.*;
  * Time: 8/1/2016 5:15 PM
  */
 @Component
-public class DirectionsHandlers extends TelegramLongPollingBot {
+public class Directions extends TelegramLongPollingBot {
 
     @Autowired
     private BotConfig botConfig;
     // STATUS
     private static final int WATING_ORIGIN_STATUS = 0;
     private static final int WATING_DESTINY_STATUS = 1;
-    private static Logger logger = LoggerFactory.getLogger(DirectionsHandlers.class);
+    private static Logger logger = LoggerFactory.getLogger(Directions.class);
     private static SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private static List<Integer> adminList = new ArrayList<>();
@@ -80,7 +80,7 @@ public class DirectionsHandlers extends TelegramLongPollingBot {
 
     private static Integer locked = 0;
 
-    public DirectionsHandlers() {
+    public Directions() {
         bootTime = System.currentTimeMillis();
     }
 

@@ -1,9 +1,7 @@
 package com.loacg.kayo;
 
-import com.loacg.kayo.handlers.DirectionsHandlers;
+import com.loacg.kayo.handlers.Directions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.telegram.telegrambots.TelegramApiException;
-import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.updatesreceivers.BotSession;
 
 /**
@@ -16,5 +14,5 @@ public class Kayo {
     public static BotSession botSession;
 
     @Autowired
-    public static DirectionsHandlers directionsHandlers;
+    public static Directions directions;
 }

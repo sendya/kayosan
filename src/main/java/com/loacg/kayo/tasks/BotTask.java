@@ -1,6 +1,6 @@
 package com.loacg.kayo.tasks;
 
-import com.loacg.kayo.handlers.DirectionsHandlers;
+import com.loacg.kayo.handlers.Directions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 public class BotTask {
 
     @Autowired
-    private DirectionsHandlers bot;
+    private Directions bot;
 
     @Scheduled(cron = "0 0 8,23 * * *")
     public void delaySendGoodMorningAndBye() {

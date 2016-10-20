@@ -1,6 +1,6 @@
 package com.loacg.controller;
 
-import com.loacg.entity.Response;
+import com.loacg.entity.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ErrorAttributes;
 import org.springframework.boot.autoconfigure.web.ErrorController;
@@ -20,14 +20,38 @@ import java.util.Map;
  * Time: 8/18/2016 10:16 AM
  */
 @RestController
-public class BaseErrorController implements ErrorController {
+public class BaseController implements ErrorController {
 
     private static final String ERROR_PATH = "/error";
 
     private final ErrorAttributes errorAttributes;
 
+    @RequestMapping("/")
+    public String home() {
+        return "This page is not available";
+    }
+
+    @RequestMapping("/memory")
+    public String status() {
+        double total = (Runtime.getRuntime().totalMemory()) / (1024.0 * 1024);
+        double max = (Runtime.getRuntime().maxMemory()) / (1024.0 * 1024);
+        double free = (Runtime.getRuntime().freeMemory()) / (1024.0 * 1024);
+
+        StringBuffer sb = new StringBuffer()
+                .append("JVM 最大可用内存：")
+                .append(max).append("MB<br/>")
+                .append("当前占用内存：")
+                .append(total).append("MB<br/>")
+                .append("当前空闲内存：")
+                .append(free).append("MB<br/>")
+                .append("实际可用内存：")
+                .append(max - total + free).append("MB");
+
+        return sb.toString();
+    }
+
     @Autowired
-    public BaseErrorController(ErrorAttributes errorAttributes) {
+    public BaseController(ErrorAttributes errorAttributes) {
         Assert.notNull(errorAttributes, "ErrorAttributes must not be null");
         this.errorAttributes = errorAttributes;
     }
@@ -39,9 +63,9 @@ public class BaseErrorController implements ErrorController {
 
     @RequestMapping(ERROR_PATH)
     @ResponseBody
-    public Response handleError(HttpServletRequest aRequest) {
+    public Data handleError(HttpServletRequest aRequest) {
         Map<String, Object> body = getErrorAttributes(aRequest, getTraceParameter(aRequest));
-        return Response.build().setStatus(body.get("message").toString(), Integer.valueOf(body.get("status").toString()));
+        return Data.build().setStatus(body.get("message").toString(), Integer.valueOf(body.get("status").toString()));
     }
 
     /**

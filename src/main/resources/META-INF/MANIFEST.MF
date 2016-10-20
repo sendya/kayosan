@@ -46,5 +46,5 @@ Class-Path: jersey-bundle-1.19.1.jar tomcat-embed-el-8.5.4.jar jersey-
   spring-jdbc-4.3.2.RELEASE.jar activation-1.1.jar spring-boot-starter
  -web-1.4.0.RELEASE.jar javax.ws.rs-api-2.0.1.jar jersey-entity-filter
  ing-2.23.1.jar classmate-1.3.1.jar
-Main-Class: com.loacg.KayosanApplication
+Main-Class: com.loacg.Kayosan
 
