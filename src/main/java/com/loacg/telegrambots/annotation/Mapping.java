@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * Project: kayosan
- * Author: liangliang.Yin <yinliangliang@rd.keytop.com.cn>
+ * Author: Sendya <18x@loacg.com>
  * Date: 11/21/2016 9:50 AM
  */
 @Target({ElementType.ANNOTATION_TYPE})

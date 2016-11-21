@@ -26,7 +26,7 @@ public class CommandHandler {
         return null;
     }
 
-    @CommandMapping(value = {"/help", "/start"}, permission = Permission.ALL, messageType = MessageType.ALL)
+    @CommandMapping(value = {"/help", "/start"}, permission = {Permission.ALL, Permission.GUEST, Permission.MEMBER, Permission.ADMIN, Permission.SUPERUSER}, messageType = MessageType.ALL)
     public Message help(Message message) {
 
         return null;

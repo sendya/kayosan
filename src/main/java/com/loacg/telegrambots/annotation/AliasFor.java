@@ -4,7 +4,7 @@ import java.lang.annotation.*;
 
 /**
  * Project: kayosan
- * Author: liangliang.Yin <yinliangliang@rd.keytop.com.cn>
+ * Author: Sendya <18x@loacg.com>
  * Date: 11/21/2016 9:40 AM
  */
 @Retention(RetentionPolicy.RUNTIME)
