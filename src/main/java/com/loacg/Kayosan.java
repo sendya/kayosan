@@ -30,6 +30,7 @@ public class Kayosan {
 			logger.info("{} is running", bot.getBotUsername());
 			// bot.init();
 		} catch (TelegramApiException e) {
+			e.printStackTrace();
 			logger.error("Failed to register bot {} due to error {}", bot.getBotUsername(), e.getMessage());
 		}
 	}
