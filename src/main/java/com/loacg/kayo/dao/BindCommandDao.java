@@ -19,8 +19,11 @@ public class BindCommandDao {
     private JdbcTemplate jdbcTemplate;
 
     public List<Map<String, Object>> getChatIds(Integer type) {
-        List<Map<String, Object>> chatIds = jdbcTemplate.queryForList("SELECT `chatId` FROM `binds` WHERE `type`=?", new Object[]{type});
-        return chatIds;
+        return jdbcTemplate.queryForList("SELECT `chatId` FROM `binds` WHERE `type`=?", new Object[]{type});
+    }
+
+    public List<Map<String, Object>> getChatIdsByTypeAndUserId(Integer type, Integer userId) {
+        return jdbcTemplate.queryForList("SELECT `chatId` FROM `binds` WHERE `type`=? AND `userId`=?", new Object[]{type, userId});
     }
 
     public boolean isBindCommand(Integer type, String charId) {
@@ -31,9 +34,8 @@ public class BindCommandDao {
     }
 
     public void addBindCommand(String chatId, Integer type, String userId) {
-        if (!this.isBindCommand(type, chatId)) {
+        if (!this.isBindCommand(type, chatId))
             jdbcTemplate.update("INSERT INTO `binds` SET `type`=?, `chatId`=?, `userId`=?", new Object[]{type, Long.valueOf(chatId), Long.valueOf(userId)});
-        }
     }
 
     public void removeBindCommand(String charId, Integer type) {

@@ -14,4 +14,8 @@ public class BuildVars {
     public static final Integer FORMAT_HTML = 2;
     public static final Integer COMMAND_TIME_OUT = 45;
 
+    public enum BindType {
+        HITOKOTO, CHIME, COMMENT_TYPECHO, COMMENT_WORDPRESS, COMMENT_DUOSHUO
+    }
+
 }

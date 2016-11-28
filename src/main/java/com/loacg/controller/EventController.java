@@ -2,6 +2,7 @@ package com.loacg.controller;
 
 import com.loacg.entity.Response;
 import com.loacg.kayo.BuildVars;
+import com.loacg.kayo.dao.BindCommandDao;
 import com.loacg.kayo.dao.BotInfoDao;
 import com.loacg.kayo.entity.BotInfo;
 import com.loacg.kayo.entity.duoshuo.DsComment;
@@ -18,10 +19,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
-import org.telegram.telegrambots.TelegramApiException;
+import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,6 +42,9 @@ public class EventController {
 
     @Autowired
     private BotInfoDao botInfoDao;
+
+    @Autowired
+    private BindCommandDao bindCommandDao;
 
     @Autowired
     private Directions bot;
@@ -119,14 +124,23 @@ public class EventController {
                     .append(meta.getThreadKey())
                     .append(")</a>");
 
+            List<Map<String, Object>> binds = bindCommandDao.getChatIdsByTypeAndUserId(5, Integer.valueOf(user));
             try {
-                bot.hookSendMessage(user, message.toString(), 0, BuildVars.FORMAT_HTML);
-                siteInfo.setSinceId(comment.getLogId());
-                botInfoDao.save(dsInfo.setV(JsonUtils.toJson(siteInfo)));
-
+                if (binds.size() > 0) {
+                    for (Map<String, Object> chatIds : binds) {
+                        String chatId = chatIds.get("chatId").toString();
+                        bot.hookSendMessage(chatId, message.toString(), 0, BuildVars.FORMAT_HTML);
+                    }
+                } else {
+                    bot.hookSendMessage(user, message.toString(), 0, BuildVars.FORMAT_HTML);
+                }
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
+
+            siteInfo.setSinceId(comment.getLogId());
+            botInfoDao.save(dsInfo.setV(JsonUtils.toJson(siteInfo)));
+
         }
 
         return Response.build();
