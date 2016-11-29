@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
-import org.telegram.telegrambots.generics.BotSession;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -19,14 +19,13 @@ public class Kayosan {
 
 	private final Logger logger = LoggerFactory.getLogger(Kayosan.class);
 
-	private BotSession session;
 	@Autowired private BotConfig botConfig;
 	@Autowired private Directions bot;
 
 	@PostConstruct public void start() {
 		TelegramBotsApi api = new TelegramBotsApi();
 		try {
-			session = api.registerBot(bot);
+			api.registerBot(bot);
 			logger.info("{} is running", bot.getBotUsername());
 			// bot.init();
 		} catch (TelegramApiException e) {
@@ -36,12 +35,11 @@ public class Kayosan {
 	}
 
 	@PreDestroy public void stop() {
-		if (session != null) {
-			session.close();
-		}
+
 	}
 
 	public static void main(String[] args) {
+		ApiContextInitializer.init();
 		SpringApplication.run(Kayosan.class, args);
 	}
 }
