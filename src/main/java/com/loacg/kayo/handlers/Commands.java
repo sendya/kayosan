@@ -59,7 +59,6 @@ public class Commands {
             return;
         }
         String str = message.getReplyToMessage().getText();
-        System.out.println(str);
         String pattern = "\\(#(\\S+)\\)";
         Pattern r = Pattern.compile(pattern);
         Matcher m = r.matcher(str);
@@ -69,9 +68,7 @@ public class Commands {
             list.add(m.group(1));
         }
 
-
-
-        String key = message.getChatId() + "_duoshuo_info";
+        String key =  message.getFrom().getId() + "_duoshuo_info";
 
         BotInfo dsInfo = botInfoDao.get(key);
         if (dsInfo == null || dsInfo.getV() == null || "".equals(dsInfo.getV().toString())) {

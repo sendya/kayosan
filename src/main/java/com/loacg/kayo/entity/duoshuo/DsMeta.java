@@ -39,7 +39,7 @@ public class DsMeta implements IEntityObject {
     @JsonProperty(THREAD_KEY)
     private String threadKey;
     @JsonProperty(AUTHOR_ID)
-    private Integer authorId;
+    private Long authorId;
     @JsonProperty(AUTHOR_KEY)
     private String authorKey;
     @JsonProperty(AUTHOR_NAME)
@@ -72,7 +72,7 @@ public class DsMeta implements IEntityObject {
         this.postId = jsonObject.getLong(POST_ID);
         this.threadId = jsonObject.getLong(THREAD_ID);
         this.threadKey = jsonObject.getString(THREAD_KEY);
-        this.authorId = jsonObject.getInt(AUTHOR_ID);
+        this.authorId = jsonObject.getLong(AUTHOR_ID);
         this.authorKey = jsonObject.getString(AUTHOR_KEY);
         this.authorName = jsonObject.getString(AUTHOR_NAME);
         this.authorEmail = jsonObject.getString(AUTHOR_EMAIL);
@@ -139,11 +139,11 @@ public class DsMeta implements IEntityObject {
         this.threadKey = threadKey;
     }
 
-    public Integer getAuthorId() {
+    public Long getAuthorId() {
         return authorId;
     }
 
-    public void setAuthorId(Integer authorId) {
+    public void setAuthorId(Long authorId) {
         this.authorId = authorId;
     }
 
