@@ -38,9 +38,6 @@ public class EventController {
     private static final Logger logger = LoggerFactory.getLogger(EventController.class);
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    @Autowired
     private BotInfoDao botInfoDao;
 
     @Autowired
@@ -106,6 +103,8 @@ public class EventController {
         JSONObject jsonObject = new JSONObject(jsonStr);
         JSONArray arr = jsonObject.getJSONArray("response");
         DsComment comment = new DsComment(arr.getJSONObject(0));
+        // 忽略本人的回复账户 ID , 唉 先写死算了。
+        if (6332337422025622273L == comment.getUserId()) return Response.build();
         StringBuffer message = new StringBuffer();
         if (comment.getMeta() instanceof DsMeta) {
             DsMeta meta = comment.getMeta();
