@@ -104,7 +104,7 @@ public class EventController {
         JSONArray arr = jsonObject.getJSONArray("response");
         DsComment comment = new DsComment(arr.getJSONObject(0));
         // 忽略本人的回复账户 ID , 唉 先写死算了。
-        if (6332337422025622273L == comment.getUserId()) return Response.build();
+        if (6332337422025622273L == comment.getUserId() || 12479007L == comment.getUserId()) return Response.build();
         StringBuffer message = new StringBuffer();
         if (comment.getMeta() instanceof DsMeta) {
             DsMeta meta = comment.getMeta();
