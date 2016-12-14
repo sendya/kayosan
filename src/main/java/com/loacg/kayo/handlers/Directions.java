@@ -61,12 +61,29 @@ public class Directions extends TelegramLongPollingBot {
                 this.handleWelcomeMessage(message);
             }
 
-            if (message.hasText()) {
+            if (message.getReplyToMessage().hasText()) {
                 commands.handler(message);
+            } else if (message.hasText()) {
+                String text = message.getText();
+                if (text.startsWith("/whoami")) {
+                    this.handleWhoami(message);
+                } else {
+                    this.hookSendMessage(message.getChatId().toString(), "暂不支持");
+                }
             }
         } catch (Exception e) {
             logger.error("onUpdateReceived ERROR: {}", e.getMessage());
         }
+
+    }
+
+    private void handleWhoami(Message message) throws TelegramApiException {
+        if (!message.isUserMessage()) {
+            StringBuffer sb = new StringBuffer();
+            this.hookSendMessage(message.getChatId().toString(), sb.append("无法在群组或频道查看自己的 Telegram ID\n请私密 @").append(this.getBotUsername()).toString(), message.getMessageId(), BuildVars.FORMAT_NONE);
+            return;
+        }
+        this.hookSendMessage(message.getChatId().toString(), String.format("您的 Telegram ID 为 `%s`", message.getFrom().getId()), message.getMessageId(), BuildVars.FORMAT_MARKDOWN);
 
     }
 

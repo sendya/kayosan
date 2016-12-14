@@ -63,6 +63,12 @@ public class EventController {
                 case "wordpress":
 
                     break;
+                case "duoshuo":
+
+                    break;
+                case "disqus":
+
+                    break;
                 default:
                     break;
             }

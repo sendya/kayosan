@@ -40,9 +40,7 @@ public class Commands {
         String text = message.getText();
         logger.info("User {}[{}] call command \"{}\" from \"{}\" , messageId: {}", message.getFrom().getUserName(), message.getFrom().getId(), text, message.getChatId(), message.getMessageId());
 
-        if (message.getReplyToMessage().hasText()) {
-            replyComment(message);
-        }
+        replyComment(message);
 
         return;
     }

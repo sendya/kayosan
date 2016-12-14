@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Configurable
-@EnableScheduling
+// @EnableScheduling
 public class BotTask {
 
     @Autowired
