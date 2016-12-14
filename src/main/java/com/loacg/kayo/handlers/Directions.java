@@ -61,7 +61,7 @@ public class Directions extends TelegramLongPollingBot {
                 this.handleWelcomeMessage(message);
             }
 
-            if (message.getReplyToMessage().hasText()) {
+            if (message.getReplyToMessage() != null) {
                 commands.handler(message);
             } else if (message.hasText()) {
                 String text = message.getText();
