@@ -34,15 +34,12 @@ public class Directions extends TelegramLongPollingBot {
 
     public Directions() {
         bootTime = System.currentTimeMillis();
+
     }
 
     @PostConstruct
     public void start() {
         logger.info("Starting {} robot , version : {}", botConfig.getName(), BuildVars.VERSION);
-
-    }
-
-    public void init() {
 
     }
 
@@ -52,9 +49,11 @@ public class Directions extends TelegramLongPollingBot {
         int time = (int) (System.currentTimeMillis()/1000 - BuildVars.COMMAND_TIME_OUT);
 
         if (message.getDate() < time) {
-            logger.info("User {} call command {} timeout", message.getFrom().getId(), message.getText());
+            logger.info("User [{}]{} call command {} timeout", message.getFrom().getId(), message.getFrom().getUserName(), message.getText());
             return;
         }
+
+        logger.info("User [{}]{} call command {}", message.getFrom().getId(), message.getFrom().getUserName(), message.getText());
 
         try {
             if (!update.hasMessage()) {
@@ -67,6 +66,24 @@ public class Directions extends TelegramLongPollingBot {
                 String text = message.getText();
                 if (text.startsWith("/whoami")) {
                     this.handleWhoami(message);
+                } else if (text.startsWith("/help") || text.startsWith("/start")) {
+                    this.handleHelp(message);
+                } else if (text.startsWith("/ping")) {
+                    this.handlePing(message);
+                } else if (text.startsWith("/status")) {
+
+                } else if (text.startsWith("/task") && !text.startsWith("/taskadd")) {
+
+                } else if (text.startsWith("/taskadd")) {
+
+                } else if (text.startsWith("/subscribe")) {
+
+                } else if (text.startsWith("/unsubscribe")) {
+
+                } else if (text.startsWith("/whitelist")) {
+
+                } else if (text.startsWith("/control")) {
+
                 } else {
                     this.hookSendMessage(message.getChatId().toString(), "暂不支持");
                 }
@@ -75,6 +92,28 @@ public class Directions extends TelegramLongPollingBot {
             logger.error("onUpdateReceived ERROR: {}", e.getMessage());
         }
 
+    }
+
+    private void handleHelp(Message message) throws TelegramApiException {
+        StringBuffer sb = new StringBuffer()
+                .append("<code>[Command List]</code>:\n\n")
+                .append("/help - 显示帮助\n")
+                .append("/ping - 机器人是否在线\n")
+                .append("/status - 服务状态\n")
+                .append("/whoami - 查看 Telegram ID\n")
+                .append("/subscribe - 订阅事件\n")
+                .append("/task [command] - on/off 推送任务开关\n")
+                .append("/taskadd [task_name] - 添加新的任务\n")
+                .append("/uptime - 机器人在线时间\n")
+                .append("/rebuild - 自我更新并重启服务(仅管理员)\n")
+                .append("Contact me via @Sendya\n\n")
+                .append("Thanks for using @" + this.getBotUsername());
+
+        this.hookSendMessage(message.getChatId().toString(), sb.toString(), 0, BuildVars.FORMAT_HTML);
+    }
+
+    private void handlePing(Message message) throws TelegramApiException {
+        this.hookSendMessage(message.getChatId().toString(), "Pong");
     }
 
     private void handleWhoami(Message message) throws TelegramApiException {
