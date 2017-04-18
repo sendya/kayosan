@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('build') {
       steps {
-        sh './build.sh'
+        sh '/usr/local/gradle/bin/gradle build -x test'
       }
     }
   }
